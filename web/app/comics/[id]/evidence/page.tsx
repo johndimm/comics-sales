@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import EvidenceChart from '@/components/EvidenceChart';
 
 type Evidence = {
   comic: any;
@@ -34,6 +35,19 @@ export default async function EvidencePage({ params }: { params: { id: string } 
           <span><b>Active rows:</b> {data.active_count ?? 0}</span>
         </div>
       </div>
+
+      <EvidenceChart
+        title="Sold curve"
+        points={data.sold_evidence || []}
+        grade={c.grade_numeric}
+        price={c.market_price}
+      />
+      <EvidenceChart
+        title="Active / offer curve"
+        points={data.active_evidence || []}
+        grade={c.grade_numeric}
+        price={c.active_anchor_price}
+      />
 
       <div className="card" style={{ marginBottom: 12, overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Sold evidence</h3>
