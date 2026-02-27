@@ -280,7 +280,7 @@ export default function DashboardClient() {
                 <td><a href={`/comics/${r.id}/evidence`}>{r.title}</a></td>
                 <td>{r.issue}</td>
                 <td><a href={`/comics/${r.id}/evidence`}>view</a></td>
-                <td><a href={`http://127.0.0.1:8080/comics/${r.id}/listing`} target="_blank">listing ↗</a></td>
+                <td><a href={`/comics/${r.id}/listing`} target="_blank">listing ↗</a></td>
                 <td>{r.api_offer_id ? <a href={`/drafts/${r.api_offer_id}`}>draft</a> : ""}</td>
                 <td>{r.grade_class ?? ""}</td>
                 <td>{r.grade_numeric ?? ""}</td>

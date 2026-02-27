@@ -36,36 +36,45 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      <EvidenceChart
-        title="Sold curve"
-        points={data.sold_evidence || []}
-        grade={c.grade_numeric}
-        price={c.market_price}
-      />
-      <EvidenceChart
-        title="Active / offer curve"
-        points={data.active_evidence || []}
-        grade={c.grade_numeric}
-        price={c.active_anchor_price}
-      />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, marginBottom: 12 }}>
+        <EvidenceChart
+          title="Sold curve"
+          points={data.sold_evidence || []}
+          grade={c.grade_numeric}
+          price={c.market_price}
+        />
+        <EvidenceChart
+          title="Active / offer curve"
+          points={data.active_evidence || []}
+          grade={c.grade_numeric}
+          price={c.active_anchor_price}
+        />
+      </div>
 
       <div className="card" style={{ marginBottom: 12, overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Sold evidence</h3>
         <table className="table">
           <thead>
-            <tr><th>#</th><th>Title</th><th>Price</th><th>Grade</th><th>Company</th><th>Link</th></tr>
+            <tr><th>#</th><th>Title</th><th>Price</th><th>Ship</th><th>Total</th><th>Date</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
           </thead>
           <tbody>
-            {(data.sold_evidence || []).map((e, i) => (
-              <tr key={e.comp_id ?? i}>
-                <td>{e.rank ?? i + 1}</td>
-                <td>{e.title}</td>
-                <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
-                <td>{e.grade_numeric ?? ''}</td>
-                <td>{e.grade_company ?? ''}</td>
-                <td>{e.url ? <a href={e.url} target="_blank">open</a> : ''}</td>
-              </tr>
-            ))}
+            {(data.sold_evidence || []).map((e, i) => {
+              const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
+              return (
+                <tr key={e.comp_id ?? i}>
+                  <td>{e.rank ?? i + 1}</td>
+                  <td>{e.title}</td>
+                  <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
+                  <td>{e.shipping != null ? `$${Number(e.shipping).toFixed(2)}` : ''}</td>
+                  <td>{total != null ? `$${Number(total).toFixed(2)}` : ''}</td>
+                  <td>{e.sold_date ?? ''}</td>
+                  <td>{e.grade_numeric ?? ''}</td>
+                  <td>{e.grade_company ?? ''}</td>
+                  <td>{e.match_score != null ? Number(e.match_score).toFixed(2) : ''}</td>
+                  <td>{e.url ? <a href={e.url} target="_blank" rel="noreferrer">View listing</a> : ''}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -74,18 +83,24 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         <h3 style={{ marginTop: 0 }}>Active / offered evidence</h3>
         <table className="table">
           <thead>
-            <tr><th>Title</th><th>Ask</th><th>Grade</th><th>Company</th><th>Link</th></tr>
+            <tr><th>Title</th><th>Ask</th><th>Ship</th><th>Total</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
           </thead>
           <tbody>
-            {(data.active_evidence || []).map((e, i) => (
-              <tr key={e.comp_id ?? i}>
-                <td>{e.title}</td>
-                <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
-                <td>{e.grade_numeric ?? ''}</td>
-                <td>{e.grade_company ?? ''}</td>
-                <td>{e.url ? <a href={e.url} target="_blank">open</a> : ''}</td>
-              </tr>
-            ))}
+            {(data.active_evidence || []).map((e, i) => {
+              const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
+              return (
+                <tr key={e.comp_id ?? i}>
+                  <td>{e.title}</td>
+                  <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
+                  <td>{e.shipping != null ? `$${Number(e.shipping).toFixed(2)}` : ''}</td>
+                  <td>{total != null ? `$${Number(total).toFixed(2)}` : ''}</td>
+                  <td>{e.grade_numeric ?? ''}</td>
+                  <td>{e.grade_company ?? ''}</td>
+                  <td>{e.match_score != null ? Number(e.match_score).toFixed(2) : ''}</td>
+                  <td>{e.url ? <a href={e.url} target="_blank" rel="noreferrer">View listing</a> : ''}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
