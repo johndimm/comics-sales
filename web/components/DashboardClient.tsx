@@ -15,6 +15,7 @@ type Filters = {
   slabbed: boolean;
   rawCommunity: boolean;
   rawNoCommunity: boolean;
+  titlePick: string;
 };
 
 const initial: Filters = {
@@ -27,6 +28,7 @@ const initial: Filters = {
   slabbed: true,
   rawCommunity: true,
   rawNoCommunity: false,
+  titlePick: "",
 };
 
 export default function DashboardClient() {
@@ -34,6 +36,7 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [f, setF] = useState<Filters>(initial);
+  const [titles, setTitles] = useState<string[]>([]);
 
   async function load() {
     setLoading(true);
@@ -70,8 +73,48 @@ export default function DashboardClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f.limit, f.slabbed, f.rawCommunity, f.rawNoCommunity]);
 
+  useEffect(() => {
+    fetch('/api/titles', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => setTitles(Array.isArray(d) ? d : []))
+      .catch(() => setTitles([]));
+  }, []);
+
+  function saveSearch() {
+    const name = window.prompt('Preset name?');
+    if (!name) return;
+    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    items.push({ name: name.trim(), state: f });
+    localStorage.setItem('savedSearches.v1', JSON.stringify(items));
+    setSavedVersion((x) => x + 1);
+  }
+
+  function runSearch(idx: number) {
+    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    const it = items[idx];
+    if (!it?.state) return;
+    setF(it.state);
+  }
+
+  function delSearch(idx: number) {
+    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    items.splice(idx, 1);
+    localStorage.setItem('savedSearches.v1', JSON.stringify(items));
+    setSavedVersion((x) => x + 1);
+  }
+
+  const [savedVersion, setSavedVersion] = useState(0);
+  const savedSearches = useMemo(() => {
+    void savedVersion;
+    try { return JSON.parse(localStorage.getItem('savedSearches.v1') || '[]'); }
+    catch { return []; }
+  }, [savedVersion]);
+
   const filtered = useMemo(() => {
     let out = [...rows];
+    if (f.titlePick) {
+      out = out.filter((r: any) => String(r?.title ?? '') === f.titlePick);
+    }
     if (f.exactCol && f.exactVal.trim()) {
       const opts = f.exactVal.toLowerCase().split(",").map((x) => x.trim()).filter(Boolean);
       out = out.filter((r: any) => opts.includes(String(r?.[f.exactCol] ?? "").toLowerCase()));
@@ -99,8 +142,14 @@ export default function DashboardClient() {
           <label><input type="checkbox" checked={f.rawCommunity} onChange={(e) => setF({ ...f, rawCommunity: e.target.checked })} /> raw_community</label>
           <label><input type="checkbox" checked={f.rawNoCommunity} onChange={(e) => setF({ ...f, rawNoCommunity: e.target.checked })} /> raw_no_community</label>
           <button onClick={load}>Reload</button>
+          <button onClick={saveSearch}>Save search</button>
+          <button onClick={() => setF(initial)}>Clear</button>
         </div>
         <div className="toolbar">
+          <select value={f.titlePick} onChange={(e) => setF({ ...f, titlePick: e.target.value })}>
+            <option value="">All titles</option>
+            {titles.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
           <select value={f.exactCol} onChange={(e) => setF({ ...f, exactCol: e.target.value })}>
             <option value="">Exact column</option>
             <option value="title">title</option>
@@ -116,8 +165,18 @@ export default function DashboardClient() {
           </select>
           <input placeholder="min" value={f.rangeMin} onChange={(e) => setF({ ...f, rangeMin: e.target.value })} style={{ width: 90 }} />
           <input placeholder="max" value={f.rangeMax} onChange={(e) => setF({ ...f, rangeMax: e.target.value })} style={{ width: 90 }} />
-          <button onClick={() => setF(initial)}>Clear</button>
         </div>
+        {savedSearches.length ? (
+          <div className="toolbar">
+            <span className="muted">Saved:</span>
+            {savedSearches.map((s: any, i: number) => (
+              <span key={`${s.name}-${i}`} className="toolbar" style={{ gap: 4 }}>
+                <button onClick={() => runSearch(i)}>{s.name}</button>
+                <button onClick={() => delSearch(i)}>x</button>
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="muted" style={{ marginBottom: 8 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
@@ -126,12 +185,13 @@ export default function DashboardClient() {
         <table className="table">
           <thead>
             <tr>
-              <th>ID</th><th>Title</th><th>Issue</th><th>Class</th><th>Grade</th><th>Market</th><th>Ask</th><th>Action</th><th>Draft</th>
+              <th>Photo</th><th>ID</th><th>Title</th><th>Issue</th><th>Class</th><th>Grade</th><th>Market</th><th>Ask</th><th>Action</th><th>Draft</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => (
               <tr key={r.id}>
+                <td>{(r as any).thumb_url ? <img src={(r as any).thumb_url} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} /> : ''}</td>
                 <td>{r.id}</td>
                 <td><a href={`/comics/${r.id}/evidence`}>{r.title}</a></td>
                 <td>{r.issue}</td>
