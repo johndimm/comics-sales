@@ -17,6 +17,21 @@ function money(v: any) {
   return v == null ? '' : `$${Number(v).toFixed(2)}`;
 }
 
+function extractImages(raw: unknown): string[] {
+  if (!raw || typeof raw !== 'string') return [];
+  try {
+    const p = JSON.parse(raw) as any;
+    const urls = [
+      p?.image?.imageUrl,
+      ...(Array.isArray(p?.thumbnailImages) ? p.thumbnailImages.map((x: any) => x?.imageUrl) : []),
+      ...(Array.isArray(p?.additionalImages) ? p.additionalImages.map((x: any) => x?.imageUrl) : []),
+    ].filter(Boolean);
+    return Array.from(new Set(urls.map((u: any) => String(u))));
+  } catch {
+    return [];
+  }
+}
+
 export default async function ListingPage({ params }: { params: { id: string } }) {
   const comicId = Number(params.id);
   const db = getDb();
@@ -41,6 +56,17 @@ export default async function ListingPage({ params }: { params: { id: string } }
   }
 
   const d = { ...row, ...decisionForRow(row) } as any;
+
+  const compPayloads = db
+    .prepare(
+      `SELECT raw_payload FROM market_comps
+       WHERE comic_id=? AND raw_payload IS NOT NULL AND TRIM(raw_payload)<>''
+       ORDER BY (listing_type='active') DESC, COALESCE(match_score,0) DESC, id DESC
+       LIMIT 20`
+    )
+    .all(comicId) as Array<{ raw_payload: string }>;
+  const photos = Array.from(new Set(compPayloads.flatMap((r) => extractImages(r.raw_payload)))).slice(0, 24);
+
   const title = `${d.title || ''} #${d.issue || ''}`.trim();
   const listingTitle = `${title}${d.grade_numeric ? ` ${d.grade_numeric}` : ''}${d.qualified_flag ? ' (Qualified)' : ''}`;
 
@@ -68,6 +94,21 @@ export default async function ListingPage({ params }: { params: { id: string } }
           <span><b>Target:</b> {money(d.target_price)}</span>
           <span><b>Floor:</b> {money(d.floor_price)}</span>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Photos</h3>
+        {photos.length ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {photos.map((u) => (
+              <a key={u} href={u} target="_blank" rel="noreferrer">
+                <img src={u} alt="photo" style={{ width: 130, height: 170, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="muted">No photos found in comp payloads.</div>
+        )}
       </div>
 
       <div className="card">

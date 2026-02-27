@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { getDb } from '@/lib/server/db';
 import { decisionForRow } from '@/lib/server/pricing';
 
@@ -15,6 +17,36 @@ function extractThumbFromPayload(raw: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+function parseIssueNum(issue: unknown): string {
+  const s = String(issue ?? '').trim();
+  const m = s.match(/\d+/);
+  return m ? String(Number(m[0])) : s;
+}
+
+function loadOfferIndex(): Map<string, string> {
+  const candidates = [
+    path.resolve(process.cwd(), '../data/api_offer_ledger.jsonl'),
+    path.resolve(process.cwd(), 'data/api_offer_ledger.jsonl'),
+  ];
+  const p = candidates.find((x) => fs.existsSync(x));
+  const out = new Map<string, string>();
+  if (!p) return out;
+
+  const lines = fs.readFileSync(p, 'utf-8').split(/\r?\n/).filter(Boolean);
+  for (const line of lines) {
+    try {
+      const r = JSON.parse(line) as any;
+      const title = String(r?.title || '').toLowerCase();
+      const m = title.match(/^(.*?)\s*#\s*(\d+)/);
+      const offerId = r?.offerId;
+      if (!m || !offerId) continue;
+      const key = `${m[1].trim()}|${String(Number(m[2]))}`;
+      out.set(key, String(offerId));
+    } catch {}
+  }
+  return out;
 }
 
 function gradeClassExpr() {
@@ -59,13 +91,17 @@ export async function GET(req: NextRequest) {
     )
     .all() as any[];
 
+  const offerIndex = loadOfferIndex();
+
   let out = rows.filter((r) => gradeClasses.includes(String(r.grade_class || '')));
   out = out.map((r) => {
     const computedThumb = extractThumbFromPayload(r.thumb_payload);
     const { thumb_payload, ...rest } = r;
+    const key = `${String(r.title || '').trim().toLowerCase()}|${parseIssueNum(r.issue)}`;
     return {
       ...rest,
       thumb_url: r.thumb_url || computedThumb || null,
+      api_offer_id: r.api_offer_id || offerIndex.get(key) || null,
       ...decisionForRow(r),
     };
   });
