@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/server/db';
 import { decisionForRow } from '@/lib/server/pricing';
 
+function extractThumbFromPayload(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const p = JSON.parse(raw) as any;
+    return (
+      p?.image?.imageUrl ||
+      p?.thumbnailImages?.[0]?.imageUrl ||
+      p?.additionalImages?.[0]?.imageUrl ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
 function gradeClassExpr() {
   return `CASE
     WHEN c.cgc_cert IS NOT NULL AND TRIM(c.cgc_cert)<>'' THEN 'slabbed'
@@ -29,7 +44,14 @@ export async function GET(req: NextRequest) {
               ps.market_price,ps.universal_market_price,ps.qualified_market_price,ps.active_anchor_price,
               ps.active_count,ps.confidence,ps.basis_count,
               ${comicColOrNull('thumb_url')}, ${comicColOrNull('importance_text')},
-              ${comicColOrNull('api_offer_id')}
+              ${comicColOrNull('api_offer_id')},
+              (
+                SELECT mc.raw_payload
+                FROM market_comps mc
+                WHERE mc.comic_id = c.id AND mc.raw_payload IS NOT NULL AND TRIM(mc.raw_payload) <> ''
+                ORDER BY (mc.listing_type='active') DESC, COALESCE(mc.match_score,0) DESC, mc.id DESC
+                LIMIT 1
+              ) AS thumb_payload
        FROM comics c
        LEFT JOIN price_suggestions ps ON ps.comic_id=c.id
        WHERE c.status IN ('unlisted','drafted') AND c.sold_price IS NULL
@@ -38,7 +60,15 @@ export async function GET(req: NextRequest) {
     .all() as any[];
 
   let out = rows.filter((r) => gradeClasses.includes(String(r.grade_class || '')));
-  out = out.map((r) => ({ ...r, ...decisionForRow(r) }));
+  out = out.map((r) => {
+    const computedThumb = extractThumbFromPayload(r.thumb_payload);
+    const { thumb_payload, ...rest } = r;
+    return {
+      ...rest,
+      thumb_url: r.thumb_url || computedThumb || null,
+      ...decisionForRow(r),
+    };
+  });
   out = out.slice(0, limit);
 
   return NextResponse.json(out);
