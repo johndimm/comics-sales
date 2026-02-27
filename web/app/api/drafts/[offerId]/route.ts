@@ -13,7 +13,7 @@ function htmlDecode(s: string) {
 export async function GET(_: NextRequest, { params }: { params: { offerId: string } }) {
   try {
     const token = await ebayToken();
-    const H = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Language': 'en-US' };
+    const H = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept-Language': 'en-US' };
     const base = ebayBase();
 
     const ro = await fetch(`${base}/sell/inventory/v1/offer/${params.offerId}`, { headers: H, cache: 'no-store' });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: { offerId: st
 
   try {
     const token = await ebayToken();
-    const H = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Language': 'en-US' };
+    const H = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept-Language': 'en-US' };
     const base = ebayBase();
 
     const ro = await fetch(`${base}/sell/inventory/v1/offer/${params.offerId}`, { headers: H, cache: 'no-store' });
