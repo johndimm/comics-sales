@@ -11,3 +11,8 @@ uvicorn.log
 ebay-code
 key.sh
 privacy-url.txt
+
+# Next.js web migration
+web/node_modules/
+web/.next/
+web/.vercel/
