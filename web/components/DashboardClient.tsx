@@ -5,6 +5,26 @@ import type { DecisionRow } from "@/lib/api";
 
 const API_BASE = "";
 
+type Row = DecisionRow & {
+  year?: number;
+  grade_numeric?: number | null;
+  qualified_flag?: number;
+  universal_market_price?: number | null;
+  qualified_market_price?: number | null;
+  market_price?: number | null;
+  target_price?: number | null;
+  active_anchor_price?: number | null;
+  net_raw?: number | null;
+  net_slabbed?: number | null;
+  slab_lift?: number | null;
+  slab_lift_pct?: number | null;
+  trend?: string | null;
+  trend_pct?: number | null;
+  anchor_price?: number | null;
+  floor_price?: number | null;
+  thumb_url?: string | null;
+};
+
 type Filters = {
   limit: number;
   exactCol: string;
@@ -32,11 +52,13 @@ const initial: Filters = {
 };
 
 export default function DashboardClient() {
-  const [rows, setRows] = useState<DecisionRow[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [f, setF] = useState<Filters>(initial);
   const [titles, setTitles] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<string>("market_price");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   async function load() {
     setLoading(true);
@@ -55,7 +77,7 @@ export default function DashboardClient() {
       const res = await fetch(`${API_BASE}/api/decision-queue?${p.toString()}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) {
-        setError((data && (data.error || data.detail)) ? `${data.error || 'error'}: ${data.detail || ''}` : `HTTP ${res.status}`);
+        setError((data && (data.error || data.detail)) ? `${data.error || "error"}: ${data.detail || ""}` : `HTTP ${res.status}`);
         setRows([]);
       } else {
         setRows(Array.isArray(data) ? data : []);
@@ -74,47 +96,56 @@ export default function DashboardClient() {
   }, [f.limit, f.slabbed, f.rawCommunity, f.rawNoCommunity]);
 
   useEffect(() => {
-    fetch('/api/titles', { cache: 'no-store' })
+    fetch("/api/titles", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => setTitles(Array.isArray(d) ? d : []))
       .catch(() => setTitles([]));
   }, []);
 
+  const [savedVersion, setSavedVersion] = useState(0);
+  const savedSearches = useMemo(() => {
+    void savedVersion;
+    try {
+      return JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
+    } catch {
+      return [];
+    }
+  }, [savedVersion]);
+
   function saveSearch() {
-    const name = window.prompt('Preset name?');
+    const name = window.prompt("Preset name?");
     if (!name) return;
-    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    const items = JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
     items.push({ name: name.trim(), state: f });
-    localStorage.setItem('savedSearches.v1', JSON.stringify(items));
+    localStorage.setItem("savedSearches.v1", JSON.stringify(items));
     setSavedVersion((x) => x + 1);
   }
 
   function runSearch(idx: number) {
-    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    const items = JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
     const it = items[idx];
     if (!it?.state) return;
     setF(it.state);
   }
 
   function delSearch(idx: number) {
-    const items = JSON.parse(localStorage.getItem('savedSearches.v1') || '[]');
+    const items = JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
     items.splice(idx, 1);
-    localStorage.setItem('savedSearches.v1', JSON.stringify(items));
+    localStorage.setItem("savedSearches.v1", JSON.stringify(items));
     setSavedVersion((x) => x + 1);
   }
 
-  const [savedVersion, setSavedVersion] = useState(0);
-  const savedSearches = useMemo(() => {
-    void savedVersion;
-    try { return JSON.parse(localStorage.getItem('savedSearches.v1') || '[]'); }
-    catch { return []; }
-  }, [savedVersion]);
+  function setSort(field: string) {
+    if (sortField === field) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  }
 
   const filtered = useMemo(() => {
     let out = [...rows];
-    if (f.titlePick) {
-      out = out.filter((r: any) => String(r?.title ?? '') === f.titlePick);
-    }
+    if (f.titlePick) out = out.filter((r: any) => String(r?.title ?? "") === f.titlePick);
     if (f.exactCol && f.exactVal.trim()) {
       const opts = f.exactVal.toLowerCase().split(",").map((x) => x.trim()).filter(Boolean);
       out = out.filter((r: any) => opts.includes(String(r?.[f.exactCol] ?? "").toLowerCase()));
@@ -130,8 +161,22 @@ export default function DashboardClient() {
         return true;
       });
     }
+
+    out.sort((a: any, b: any) => {
+      const av = a?.[sortField];
+      const bv = b?.[sortField];
+      const an = Number(av);
+      const bn = Number(bv);
+      let cmp = 0;
+      if (!Number.isNaN(an) && !Number.isNaN(bn) && av != null && bv != null) cmp = an - bn;
+      else cmp = String(av ?? "").localeCompare(String(bv ?? ""), undefined, { numeric: true, sensitivity: "base" });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
     return out;
-  }, [rows, f]);
+  }, [rows, f, sortField, sortDir]);
+
+  const money = (v: any) => (v != null && v !== "" ? `$${Number(v).toFixed(2)}` : "");
 
   return (
     <>
@@ -155,6 +200,7 @@ export default function DashboardClient() {
             <option value="title">title</option>
             <option value="grade_class">grade_class</option>
             <option value="action">action</option>
+            <option value="trend">trend</option>
           </select>
           <input placeholder="Exact value" value={f.exactVal} onChange={(e) => setF({ ...f, exactVal: e.target.value })} />
           <select value={f.rangeCol} onChange={(e) => setF({ ...f, rangeCol: e.target.value })}>
@@ -162,6 +208,7 @@ export default function DashboardClient() {
             <option value="market_price">market_price</option>
             <option value="target_price">target_price</option>
             <option value="grade_numeric">grade_numeric</option>
+            <option value="slab_lift_pct">slab_lift_pct</option>
           </select>
           <input placeholder="min" value={f.rangeMin} onChange={(e) => setF({ ...f, rangeMin: e.target.value })} style={{ width: 90 }} />
           <input placeholder="max" value={f.rangeMax} onChange={(e) => setF({ ...f, rangeMax: e.target.value })} style={{ width: 90 }} />
@@ -180,27 +227,58 @@ export default function DashboardClient() {
       </div>
 
       <div className="muted" style={{ marginBottom: 8 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
-      {error ? <div style={{ color: '#b91c1c', marginBottom: 8 }}>API error: {error}</div> : null}
+      {error ? <div style={{ color: "#b91c1c", marginBottom: 8 }}>API error: {error}</div> : null}
       <div className="card" style={{ overflowX: "auto" }}>
         <table className="table">
           <thead>
             <tr>
-              <th>Photo</th><th>ID</th><th>Title</th><th>Issue</th><th>Class</th><th>Grade</th><th>Market</th><th>Ask</th><th>Action</th><th>Draft</th>
+              <th>Photo</th>
+              <th onClick={() => setSort("title")}>Title</th>
+              <th onClick={() => setSort("issue")}>Issue</th>
+              <th>Evidence</th>
+              <th>Listing</th>
+              <th>Ebay</th>
+              <th onClick={() => setSort("grade_class")}>Class</th>
+              <th onClick={() => setSort("grade_numeric")}>Grade</th>
+              <th onClick={() => setSort("universal_market_price")}>Universal FMV</th>
+              <th onClick={() => setSort("qualified_market_price")}>Qualified FMV</th>
+              <th onClick={() => setSort("market_price")}>Market</th>
+              <th onClick={() => setSort("target_price")}>Ask</th>
+              <th onClick={() => setSort("net_raw")}>Net Raw</th>
+              <th onClick={() => setSort("net_slabbed")}>Net Slabbed</th>
+              <th onClick={() => setSort("slab_lift")}>Slab Lift</th>
+              <th onClick={() => setSort("slab_lift_pct")}>Lift %</th>
+              <th onClick={() => setSort("trend_pct")}>Trend</th>
+              <th onClick={() => setSort("anchor_price")}>Anchor</th>
+              <th onClick={() => setSort("floor_price")}>Floor</th>
+              <th>Qualified</th>
+              <th onClick={() => setSort("action")}>Action</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((r) => (
               <tr key={r.id}>
-                <td>{(r as any).thumb_url ? <img src={(r as any).thumb_url} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} /> : ''}</td>
-                <td>{r.id}</td>
+                <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb" }} /> : ""}</td>
                 <td><a href={`/comics/${r.id}/evidence`}>{r.title}</a></td>
                 <td>{r.issue}</td>
+                <td><a href={`/comics/${r.id}/evidence`}>view</a></td>
+                <td><a href={`http://127.0.0.1:8080/comics/${r.id}/listing`} target="_blank">listing ↗</a></td>
+                <td>{r.api_offer_id ? <a href={`/drafts/${r.api_offer_id}`}>draft</a> : ""}</td>
                 <td>{r.grade_class ?? ""}</td>
                 <td>{r.grade_numeric ?? ""}</td>
-                <td>{r.market_price != null ? `$${Number(r.market_price).toFixed(2)}` : ""}</td>
-                <td><b>{r.target_price != null ? `$${Number(r.target_price).toFixed(2)}` : ""}</b></td>
-                <td>{r.action ?? ""}</td>
-                <td>{r.api_offer_id ? "yes" : ""}</td>
+                <td>{money(r.universal_market_price)}</td>
+                <td>{money(r.qualified_market_price)}</td>
+                <td>{money(r.market_price)}</td>
+                <td><b>{money(r.target_price)}</b></td>
+                <td>{money(r.net_raw)}</td>
+                <td>{money(r.net_slabbed)}</td>
+                <td>{money(r.slab_lift)}</td>
+                <td>{r.slab_lift_pct != null ? `${Number(r.slab_lift_pct).toFixed(1)}%` : ""}</td>
+                <td>{r.trend || ""}{r.trend_pct != null ? ` (${Number(r.trend_pct).toFixed(1)}%)` : ""}</td>
+                <td>{money(r.anchor_price)}</td>
+                <td>{money(r.floor_price)}</td>
+                <td>{r.qualified_flag ? "Yes" : ""}</td>
+                <td>{r.action || ""}</td>
               </tr>
             ))}
           </tbody>
