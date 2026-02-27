@@ -44,7 +44,7 @@ export default async function DraftsPage() {
                 <td>{r.issue}</td>
                 <td>{r.target_price != null ? `$${Number(r.target_price).toFixed(2)}` : ''}</td>
                 <td>{r.api_offer_id}</td>
-                <td><a href={`http://127.0.0.1:8080/api-drafts/view/${r.api_offer_id}`} target="_blank">legacy view ↗</a></td>
+                <td><Link href={`/drafts/${r.api_offer_id}`}>view/edit</Link></td>
                 <td><a href={`http://127.0.0.1:8080/api-drafts/edit/${r.api_offer_id}`} target="_blank">legacy edit ↗</a></td>
               </tr>
             ))}
