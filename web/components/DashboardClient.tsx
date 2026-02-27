@@ -133,7 +133,7 @@ export default function DashboardClient() {
             {filtered.map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td>
-                <td>{r.title}</td>
+                <td><a href={`/comics/${r.id}/evidence`}>{r.title}</a></td>
                 <td>{r.issue}</td>
                 <td>{r.grade_class ?? ""}</td>
                 <td>{r.grade_numeric ?? ""}</td>
