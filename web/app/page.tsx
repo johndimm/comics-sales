@@ -9,6 +9,7 @@ export default function HomePage() {
       </p>
       <div className="toolbar">
         <a className="card" href="http://127.0.0.1:8080" target="_blank">Open legacy app ↗</a>
+        <a className="card" href="/drafts">Drafts</a>
       </div>
       <DashboardClient />
     </main>
