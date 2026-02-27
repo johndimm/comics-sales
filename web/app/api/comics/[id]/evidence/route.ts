@@ -12,7 +12,11 @@ function extractListingUrl(raw: unknown): string | null {
   if (!raw || typeof raw !== 'string') return null;
   try {
     const p = JSON.parse(raw) as any;
-    return p?.itemWebUrl || p?.itemAffiliateWebUrl || null;
+    const direct = p?.itemWebUrl || p?.itemAffiliateWebUrl;
+    if (direct) return String(direct);
+    const itemId = p?.itemId || p?.legacyItemId || p?.item?.itemId || p?.item?.legacyItemId;
+    if (itemId) return `https://www.ebay.com/itm/${encodeURIComponent(String(itemId))}`;
+    return null;
   } catch {
     return null;
   }
