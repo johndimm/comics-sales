@@ -145,8 +145,13 @@ export default function DashboardClient() {
 
   const sortLabel = (field: string, label: string) => {
     const active = sortField === field;
-    const arrow = !active ? " ↕" : (sortDir === "asc" ? " ↑" : " ↓");
-    return `${label}${arrow}`;
+    const arrow = !active ? "⇅" : (sortDir === "asc" ? "▲" : "▼");
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span>{label}</span>
+        <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1 }}>{arrow}</span>
+      </span>
+    );
   };
 
   const sortThStyle = (field: string): CSSProperties => ({
