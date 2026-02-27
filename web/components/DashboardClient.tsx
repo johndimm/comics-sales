@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { DecisionRow } from "@/lib/api";
 
 const API_BASE = "";
@@ -143,6 +143,19 @@ export default function DashboardClient() {
     }
   }
 
+  const sortLabel = (field: string, label: string) => {
+    const active = sortField === field;
+    const arrow = !active ? " ↕" : (sortDir === "asc" ? " ↑" : " ↓");
+    return `${label}${arrow}`;
+  };
+
+  const sortThStyle = (field: string): CSSProperties => ({
+    cursor: "pointer",
+    userSelect: "none",
+    background: sortField === field ? "#eef2ff" : undefined,
+    whiteSpace: "nowrap",
+  });
+
   const filtered = useMemo(() => {
     let out = [...rows];
     if (f.titlePick) out = out.filter((r: any) => String(r?.title ?? "") === f.titlePick);
@@ -233,26 +246,26 @@ export default function DashboardClient() {
           <thead>
             <tr>
               <th>Photo</th>
-              <th onClick={() => setSort("title")}>Title</th>
-              <th onClick={() => setSort("issue")}>Issue</th>
+              <th onClick={() => setSort("title")} style={sortThStyle("title")}>{sortLabel("title", "Title")}</th>
+              <th onClick={() => setSort("issue")} style={sortThStyle("issue")}>{sortLabel("issue", "Issue")}</th>
               <th>Evidence</th>
               <th>Listing</th>
               <th>Ebay</th>
-              <th onClick={() => setSort("grade_class")}>Class</th>
-              <th onClick={() => setSort("grade_numeric")}>Grade</th>
-              <th onClick={() => setSort("universal_market_price")}>Universal FMV</th>
-              <th onClick={() => setSort("qualified_market_price")}>Qualified FMV</th>
-              <th onClick={() => setSort("market_price")}>Market</th>
-              <th onClick={() => setSort("target_price")}>Ask</th>
-              <th onClick={() => setSort("net_raw")}>Net Raw</th>
-              <th onClick={() => setSort("net_slabbed")}>Net Slabbed</th>
-              <th onClick={() => setSort("slab_lift")}>Slab Lift</th>
-              <th onClick={() => setSort("slab_lift_pct")}>Lift %</th>
-              <th onClick={() => setSort("trend_pct")}>Trend</th>
-              <th onClick={() => setSort("anchor_price")}>Anchor</th>
-              <th onClick={() => setSort("floor_price")}>Floor</th>
+              <th onClick={() => setSort("grade_class")} style={sortThStyle("grade_class")}>{sortLabel("grade_class", "Class")}</th>
+              <th onClick={() => setSort("grade_numeric")} style={sortThStyle("grade_numeric")}>{sortLabel("grade_numeric", "Grade")}</th>
+              <th onClick={() => setSort("universal_market_price")} style={sortThStyle("universal_market_price")}>{sortLabel("universal_market_price", "Universal FMV")}</th>
+              <th onClick={() => setSort("qualified_market_price")} style={sortThStyle("qualified_market_price")}>{sortLabel("qualified_market_price", "Qualified FMV")}</th>
+              <th onClick={() => setSort("market_price")} style={sortThStyle("market_price")}>{sortLabel("market_price", "Market")}</th>
+              <th onClick={() => setSort("target_price")} style={sortThStyle("target_price")}>{sortLabel("target_price", "Ask")}</th>
+              <th onClick={() => setSort("net_raw")} style={sortThStyle("net_raw")}>{sortLabel("net_raw", "Net Raw")}</th>
+              <th onClick={() => setSort("net_slabbed")} style={sortThStyle("net_slabbed")}>{sortLabel("net_slabbed", "Net Slabbed")}</th>
+              <th onClick={() => setSort("slab_lift")} style={sortThStyle("slab_lift")}>{sortLabel("slab_lift", "Slab Lift")}</th>
+              <th onClick={() => setSort("slab_lift_pct")} style={sortThStyle("slab_lift_pct")}>{sortLabel("slab_lift_pct", "Lift %")}</th>
+              <th onClick={() => setSort("trend_pct")} style={sortThStyle("trend_pct")}>{sortLabel("trend_pct", "Trend")}</th>
+              <th onClick={() => setSort("anchor_price")} style={sortThStyle("anchor_price")}>{sortLabel("anchor_price", "Anchor")}</th>
+              <th onClick={() => setSort("floor_price")} style={sortThStyle("floor_price")}>{sortLabel("floor_price", "Floor")}</th>
               <th>Qualified</th>
-              <th onClick={() => setSort("action")}>Action</th>
+              <th onClick={() => setSort("action")} style={sortThStyle("action")}>{sortLabel("action", "Action")}</th>
             </tr>
           </thead>
           <tbody>
