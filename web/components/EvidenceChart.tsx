@@ -12,6 +12,49 @@ function median(vals: number[]) {
   return n % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+function seriesFrom(points: Array<{ g: number; p: number }>) {
+  const byGrade = new Map<number, number[]>();
+  for (const d of points) byGrade.set(d.g, [...(byGrade.get(d.g) || []), d.p]);
+  return [...byGrade.entries()]
+    .map(([g, vals]) => ({ g, p: median(vals) || 0 }))
+    .sort((a, b) => a.g - b.g);
+}
+
+function smoothPath(series: Array<{ g: number; p: number }>, sx: (x: number) => number, sy: (y: number) => number) {
+  if (series.length < 2) return '';
+  const xy = series.map((s) => ({ x: sx(s.g), y: sy(s.p) }));
+  let d = `M ${xy[0].x.toFixed(1)} ${xy[0].y.toFixed(1)}`;
+  for (let i = 1; i < xy.length; i++) {
+    const prev = xy[i - 1];
+    const cur = xy[i];
+    const cx = (prev.x + cur.x) / 2;
+    const cy = (prev.y + cur.y) / 2;
+    d += ` Q ${prev.x.toFixed(1)} ${prev.y.toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)}`;
+  }
+  const last = xy[xy.length - 1];
+  d += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+  return d;
+}
+
+function interpPrice(series: Array<{ g: number; p: number }>, g: number) {
+  if (!series.length) return null;
+  if (series.length === 1) return series[0].p;
+  if (g <= series[0].g) return series[0].p;
+  if (g >= series[series.length - 1].g) return series[series.length - 1].p;
+  for (let i = 0; i < series.length - 1; i++) {
+    const lo = series[i];
+    const hi = series[i + 1];
+    if (lo.g <= g && g <= hi.g) {
+      const t = (g - lo.g) / (hi.g - lo.g);
+      if (lo.p > 0 && hi.p > 0) {
+        return Math.exp(Math.log(lo.p) + t * (Math.log(hi.p) - Math.log(lo.p)));
+      }
+      return lo.p + t * (hi.p - lo.p);
+    }
+  }
+  return null;
+}
+
 export default function EvidenceChart({ points, grade, price, title }: { points: P[]; grade?: number | null; price?: number | null; title: string }) {
   const w = 560, h = 250, pad = 30;
 
@@ -33,31 +76,20 @@ export default function EvidenceChart({ points, grade, price, title }: { points:
   const sx = (x: number) => pad + (x - x0) * ((w - 2 * pad) / (x1 - x0));
   const sy = (y: number) => h - pad - (y - y0) * ((h - 2 * pad) / (y1 - y0));
 
-  const byGrade = new Map<number, number[]>();
-  for (const d of data) {
-    byGrade.set(d.g, [...(byGrade.get(d.g) || []), d.p]);
-  }
-  const series = [...byGrade.entries()]
-    .map(([g, vals]) => ({ g, p: median(vals) || 0 }))
-    .sort((a, b) => a.g - b.g);
+  const rawPts = data.filter((d) => d.raw);
+  const slabPts = data.filter((d) => !d.raw);
+  const rawSeries = seriesFrom(rawPts);
+  const slabSeries = seriesFrom(slabPts);
 
-  const path = series.map((s, i) => `${i ? 'L' : 'M'} ${sx(s.g).toFixed(1)} ${sy(s.p).toFixed(1)}`).join(' ');
+  const rawPath = smoothPath(rawSeries, sx, sy);
+  const slabPath = smoothPath(slabSeries, sx, sy);
 
   let dotY: number | null = null;
   if (grade != null) {
-    const tg = Number(grade);
-    if (series.length === 1) dotY = series[0].p;
-    else {
-      const lo = [...series].filter((s) => s.g <= tg).pop();
-      const hi = series.find((s) => s.g >= tg);
-      if (lo && hi) {
-        if (hi.g === lo.g) dotY = lo.p;
-        else {
-          const t = (tg - lo.g) / (hi.g - lo.g);
-          dotY = lo.p + t * (hi.p - lo.p);
-        }
-      }
-    }
+    const g = Number(grade);
+    const slabEst = interpPrice(slabSeries, g);
+    const rawEst = interpPrice(rawSeries, g);
+    dotY = slabEst ?? rawEst;
   }
   if (dotY == null && price != null) dotY = Number(price);
 
@@ -81,7 +113,10 @@ export default function EvidenceChart({ points, grade, price, title }: { points:
         })}
         <line x1={pad} y1={h - pad} x2={w - pad} y2={h - pad} stroke="#9ca3af" />
         <line x1={pad} y1={pad} x2={pad} y2={h - pad} stroke="#9ca3af" />
-        <path d={path} fill="none" stroke="#1d4ed8" strokeWidth="2" opacity="0.9" />
+
+        {slabPath ? <path d={slabPath} fill="none" stroke="#1d4ed8" strokeWidth="2" opacity="0.95" /> : null}
+        {rawPath ? <path d={rawPath} fill="none" stroke="#b91c1c" strokeWidth="2" opacity="0.95" /> : null}
+
         {data.map((d, i) => (
           <circle key={i} cx={sx(d.g)} cy={sy(d.p)} r="4.8" fill={d.raw ? '#dc2626' : '#2563eb'}>
             <title>{`${d.raw ? 'RAW' : 'SLAB/UNSPEC'} • G ${d.g} • $${d.p.toFixed(2)} • ${d.t}`}</title>
