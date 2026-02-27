@@ -1,17 +1,13 @@
-import DashboardClient from '@/components/DashboardClient';
-
 export default function HomePage() {
+  const legacyUrl = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8080';
+
   return (
-    <main className="container">
-      <h1 style={{ margin: '0 0 10px 0' }}>Comics MVP (Next.js migration)</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Phase 1: interactive dashboard in React, backed by existing FastAPI endpoints.
-      </p>
-      <div className="toolbar">
-        <a className="card" href="http://127.0.0.1:8080" target="_blank">Open legacy app ↗</a>
-        <a className="card" href="/drafts">Drafts</a>
-      </div>
-      <DashboardClient />
+    <main style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, background: '#fff' }}>
+      <iframe
+        src={legacyUrl}
+        title="Comics MVP Legacy"
+        style={{ width: '100%', height: '100%', border: 'none' }}
+      />
     </main>
   );
 }
