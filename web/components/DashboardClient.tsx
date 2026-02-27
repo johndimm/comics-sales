@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { DecisionRow } from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8080";
+const API_BASE = "";
 
 type Filters = {
   limit: number;
@@ -32,10 +32,12 @@ const initial: Filters = {
 export default function DashboardClient() {
   const [rows, setRows] = useState<DecisionRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
   const [f, setF] = useState<Filters>(initial);
 
   async function load() {
     setLoading(true);
+    setError("");
     try {
       const p = new URLSearchParams();
       p.set("limit", String(f.limit || 500));
@@ -49,7 +51,15 @@ export default function DashboardClient() {
       if (classes) p.set("grade_classes", classes);
       const res = await fetch(`${API_BASE}/api/decision-queue?${p.toString()}`, { cache: "no-store" });
       const data = await res.json();
-      setRows(Array.isArray(data) ? data : []);
+      if (!res.ok) {
+        setError((data && (data.error || data.detail)) ? `${data.error || 'error'}: ${data.detail || ''}` : `HTTP ${res.status}`);
+        setRows([]);
+      } else {
+        setRows(Array.isArray(data) ? data : []);
+      }
+    } catch (e: any) {
+      setError(String(e?.message || e));
+      setRows([]);
     } finally {
       setLoading(false);
     }
@@ -111,6 +121,7 @@ export default function DashboardClient() {
       </div>
 
       <div className="muted" style={{ marginBottom: 8 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
+      {error ? <div style={{ color: '#b91c1c', marginBottom: 8 }}>API error: {error}</div> : null}
       <div className="card" style={{ overflowX: "auto" }}>
         <table className="table">
           <thead>
