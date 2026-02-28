@@ -20,6 +20,12 @@ function money(v: any) {
   return v == null ? '' : `$${Number(v).toFixed(2)}`;
 }
 
+function fmtGrade(v: any) {
+  if (v == null || v === '') return '';
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toFixed(1) : String(v);
+}
+
 function parseIssueNum(issue: unknown): string {
   const s = String(issue ?? '').trim();
   const m = s.match(/\d+/);
@@ -126,7 +132,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
   const ourPhotos = await fetchDraftImages(offerId);
 
   const title = `${d.title || ''} #${d.issue || ''}`.trim();
-  const listingTitle = `${title}${d.grade_numeric ? ` ${d.grade_numeric}` : ''}${d.qualified_flag ? ' (Qualified)' : ''}`;
+  const listingTitle = `${title}${d.grade_numeric != null ? ` ${fmtGrade(d.grade_numeric)}` : ''}${d.qualified_flag ? ' (Qualified)' : ''}`;
 
   return (
     <main className="container">
@@ -140,7 +146,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
       <div className="card" style={{ marginBottom: 12 }}>
         <div><b>{title}</b></div>
-        <div className="muted" style={{ marginTop: 6 }}>Class: {d.grade_class || 'unknown'} · Grade: {d.grade_numeric ?? 'N/A'}{d.qualified_flag ? ' Qualified' : ''}</div>
+        <div className="muted" style={{ marginTop: 6 }}>Class: {d.grade_class || 'unknown'} · Grade: {d.grade_numeric != null ? fmtGrade(d.grade_numeric) : 'N/A'}{d.qualified_flag ? ' Qualified' : ''}</div>
       </div>
 
       <div className="card" style={{ marginBottom: 12 }}>
