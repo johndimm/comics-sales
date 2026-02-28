@@ -107,13 +107,33 @@ export default function DashboardClient() {
   }, [f.limit, f.slabbed, f.rawCommunity, f.rawNoCommunity]);
 
   const rowTitles = useMemo(() => {
+    // Keep title choices in sync with currently listed rows (apply exact/range filters, ignore titlePick itself).
+    let out = [...rows] as any[];
+
+    if (f.exactCol && f.exactVal.trim()) {
+      const opts = f.exactVal.toLowerCase().split(',').map((x) => x.trim()).filter(Boolean);
+      out = out.filter((r: any) => opts.includes(String(r?.[f.exactCol] ?? '').toLowerCase()));
+    }
+
+    if (f.rangeCol && (f.rangeMin || f.rangeMax)) {
+      const min = f.rangeMin === '' ? null : Number(f.rangeMin);
+      const max = f.rangeMax === '' ? null : Number(f.rangeMax);
+      out = out.filter((r: any) => {
+        const v = Number(r?.[f.rangeCol]);
+        if (Number.isNaN(v)) return false;
+        if (min != null && v < min) return false;
+        if (max != null && v > max) return false;
+        return true;
+      });
+    }
+
     const s = new Set<string>();
-    for (const r of rows as any[]) {
+    for (const r of out) {
       const t = String(r?.title ?? '').trim();
       if (t) s.add(t);
     }
     return Array.from(s).sort((a, b) => a.localeCompare(b));
-  }, [rows]);
+  }, [rows, f.exactCol, f.exactVal, f.rangeCol, f.rangeMin, f.rangeMax]);
 
   const [savedVersion, setSavedVersion] = useState(0);
   const savedSearches = useMemo(() => {
