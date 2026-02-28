@@ -59,6 +59,7 @@ export default function DashboardClient() {
   const [titles, setTitles] = useState<string[]>([]);
   const [sortField, setSortField] = useState<string>("market_price");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [modalSrc, setModalSrc] = useState<string>("");
 
   async function load() {
     setLoading(true);
@@ -246,6 +247,11 @@ export default function DashboardClient() {
 
       <div className="muted" style={{ marginBottom: 8 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
       {error ? <div style={{ color: "#b91c1c", marginBottom: 8 }}>API error: {error}</div> : null}
+      {modalSrc ? (
+        <div onClick={() => setModalSrc("")} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "zoom-out" }}>
+          <img src={modalSrc} alt="full" style={{ maxWidth: "96vw", maxHeight: "92vh", borderRadius: 10, boxShadow: "0 10px 30px rgba(0,0,0,.45)" }} />
+        </div>
+      ) : null}
       <div className="card" style={{ overflowX: "auto" }}>
         <table className="table">
           <thead>
@@ -276,7 +282,7 @@ export default function DashboardClient() {
           <tbody>
             {filtered.map((r) => (
               <tr key={r.id}>
-                <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb" }} /> : ""}</td>
+                <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" onClick={() => setModalSrc(String(r.thumb_url))} style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "zoom-in" }} /> : ""}</td>
                 <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">{r.title}</a></td>
                 <td>{r.issue}</td>
                 <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">view ↗</a></td>
