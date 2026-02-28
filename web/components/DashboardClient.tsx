@@ -47,7 +47,7 @@ const initial: Filters = {
   rangeMax: "",
   slabbed: true,
   rawCommunity: true,
-  rawNoCommunity: false,
+  rawNoCommunity: true,
   titlePick: "",
 };
 
