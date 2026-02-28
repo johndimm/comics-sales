@@ -207,9 +207,6 @@ export default function DashboardClient() {
       <div className="card" style={{ marginBottom: 12 }}>
         <div className="toolbar">
           <label>Limit <input type="number" value={f.limit} onChange={(e) => setF({ ...f, limit: Number(e.target.value || 500) })} style={{ width: 90 }} /></label>
-          <label><input type="checkbox" checked={f.slabbed} onChange={(e) => setF({ ...f, slabbed: e.target.checked })} /> slabbed</label>
-          <label><input type="checkbox" checked={f.rawCommunity} onChange={(e) => setF({ ...f, rawCommunity: e.target.checked })} /> raw_community</label>
-          <label><input type="checkbox" checked={f.rawNoCommunity} onChange={(e) => setF({ ...f, rawNoCommunity: e.target.checked })} /> raw_no_community</label>
           <button onClick={load}>Search</button>
           <button onClick={saveSearch}>Save search</button>
           <button onClick={() => setF(initial)}>Clear</button>
