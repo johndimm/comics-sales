@@ -135,15 +135,15 @@ export default function DashboardClient() {
     return Array.from(s).sort((a, b) => a.localeCompare(b));
   }, [rows, f.exactCol, f.exactVal, f.rangeCol, f.rangeMin, f.rangeMax]);
 
-  const [savedVersion, setSavedVersion] = useState(0);
-  const savedSearches = useMemo(() => {
-    void savedVersion;
+  const [savedSearches, setSavedSearches] = useState<any[]>([]);
+
+  useEffect(() => {
     try {
-      return JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
+      setSavedSearches(JSON.parse(localStorage.getItem("savedSearches.v1") || "[]"));
     } catch {
-      return [];
+      setSavedSearches([]);
     }
-  }, [savedVersion]);
+  }, []);
 
   function saveSearch() {
     const name = window.prompt("Preset name?");
@@ -151,7 +151,7 @@ export default function DashboardClient() {
     const items = JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
     items.push({ name: name.trim(), state: f });
     localStorage.setItem("savedSearches.v1", JSON.stringify(items));
-    setSavedVersion((x) => x + 1);
+    setSavedSearches(items);
   }
 
   function runSearch(idx: number) {
@@ -165,7 +165,7 @@ export default function DashboardClient() {
     const items = JSON.parse(localStorage.getItem("savedSearches.v1") || "[]");
     items.splice(idx, 1);
     localStorage.setItem("savedSearches.v1", JSON.stringify(items));
-    setSavedVersion((x) => x + 1);
+    setSavedSearches(items);
   }
 
   function setSort(field: string) {
