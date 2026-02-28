@@ -26,6 +26,7 @@ export default async function DraftPage({ params }: { params: { offerId: string 
   const data = result.data;
   const offer = data.offer || {};
   const form = data.form || {};
+  const images: string[] = Array.isArray(data.images) ? data.images : [];
 
   return (
     <main className="container">
@@ -42,6 +43,21 @@ export default async function DraftPage({ params }: { params: { offerId: string 
           <span><b>Status:</b> {offer.status || ''}</span>
           <span><b>Price:</b> {(((offer.pricingSummary || {}).price || {}).value) ? `$${((offer.pricingSummary || {}).price || {}).value}` : ''}</span>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Photos</h3>
+        {images.length ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {images.map((u) => (
+              <a key={u} href={u} target="_blank" rel="noreferrer">
+                <img src={u} alt="draft" style={{ width: 130, height: 170, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="muted">No photos on this draft.</div>
+        )}
       </div>
 
       <DraftEditor offerId={params.offerId} initial={form} />

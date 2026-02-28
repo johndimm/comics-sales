@@ -27,8 +27,9 @@ export async function GET(_: NextRequest, { params }: { params: { offerId: strin
     const title = (inv?.product || {}).title || '';
     const price = (((offer?.pricingSummary || {}).price || {}).value || '').toString();
     const description = (offer?.listingDescription || (inv?.product || {}).description || '').toString();
+    const images = Array.isArray((inv?.product || {}).imageUrls) ? (inv.product.imageUrls as string[]) : [];
 
-    return NextResponse.json({ offer, form: { title, price, description: htmlDecode(description) } });
+    return NextResponse.json({ offer, form: { title, price, description: htmlDecode(description) }, images });
   } catch (e: any) {
     return NextResponse.json({ error: String(e?.message || e) }, { status: 502 });
   }
