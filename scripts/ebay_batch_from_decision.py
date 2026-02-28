@@ -30,6 +30,16 @@ SERIES_PREFIX = {
     'x-men': 'xmen',
 }
 
+KEY_ISSUE_NOTES = {
+    ('amazing spider-man', '14'): 'First appearance of Green Goblin.',
+    ('amazing spider-man', '31'): 'First Gwen Stacy and Harry Osborn (cameo).',
+    ('amazing spider-man', '39'): 'Green Goblin identity revealed.',
+    ('fantastic four', '48'): 'First Silver Surfer and first Galactus (cameo).',
+    ('fantastic four', '49'): 'First full Galactus.',
+    ('fantastic four', '50'): 'Silver Surfer turns against Galactus.',
+    ('fantastic four', '52'): 'First appearance of Black Panther.',
+}
+
 
 def api_token():
     cid, sec, rt = os.getenv('EBAY_CLIENT_ID'), os.getenv('EBAY_CLIENT_SECRET'), os.getenv('EBAY_REFRESH_TOKEN')
@@ -88,6 +98,34 @@ def load_pgm_links():
                 links[(t, i, gc)] = u
                 links[(t, i, 'any')] = u
     return links
+
+
+def issue_importance_text(title: str, issue: str):
+    t = (title or '').strip().lower()
+    i = issue_num(issue)
+
+    if (t, i) in KEY_ISSUE_NOTES:
+        return KEY_ISSUE_NOTES[(t, i)]
+
+    try:
+        inum = int(i)
+    except Exception:
+        inum = None
+
+    if t == 'fantastic four':
+        if inum is not None and inum <= 102:
+            return f"Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand."
+        return f"Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade."
+
+    if t == 'amazing spider-man':
+        if inum is not None and inum <= 50:
+            return f"Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel's most collected runs."
+        return f"Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums."
+
+    if t == 'x-men':
+        return f"X-Men #{i} is from Marvel's core mutant run, where condition and page quality materially impact value."
+
+    return f"{title} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition."
 
 
 def dynamic_ask_multiplier(row):
@@ -213,8 +251,9 @@ def main():
         title_line = f"{t} #{i} ({year}) Marvel Comics {state} {grade:g}{qtxt}".replace('  ', ' ').strip()
         cls = 'slabbed' if qualified else 'raw_community'
         link = pgm.get((t_key, i, cls)) or pgm.get((t_key, i, 'any')) or ''
+        why = issue_importance_text(t, i)
         desc = (
-            f"Why this issue matters: {t} #{i} is a classic back-issue with collector demand, and value is strongly grade-dependent.\n\n"
+            f"Why this issue matters: {why}\n\n"
             "Please review all photos carefully and judge condition for yourself.\n\n"
             "Ships bagged/boarded with secure packaging.\n\n"
             + (f"Please Grade Me: {link}" if link else '')
