@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { getDb } from '@/lib/server/db';
 import { decisionForRow } from '@/lib/server/pricing';
+import { ebayBase, ebayToken } from '@/lib/server/ebay';
 
 function compIsRaw(r: any) {
   const gc = String(r?.grade_company || '').trim().toUpperCase();
@@ -19,6 +22,56 @@ function extractListingUrl(raw: unknown): string | null {
     return null;
   } catch {
     return null;
+  }
+}
+
+function parseIssueNum(issue: unknown): string {
+  const s = String(issue ?? '').trim();
+  const m = s.match(/\d+/);
+  return m ? String(Number(m[0])) : s;
+}
+
+function loadOfferIndex(): Map<string, string> {
+  const candidates = [
+    path.resolve(process.cwd(), '../data/api_offer_ledger.jsonl'),
+    path.resolve(process.cwd(), 'data/api_offer_ledger.jsonl'),
+  ];
+  const p = candidates.find((x) => fs.existsSync(x));
+  const out = new Map<string, string>();
+  if (!p) return out;
+  const lines = fs.readFileSync(p, 'utf-8').split(/\r?\n/).filter(Boolean);
+  for (const line of lines) {
+    try {
+      const r = JSON.parse(line) as any;
+      const title = String(r?.title || '').toLowerCase();
+      const m = title.match(/^(.*?)\s*#\s*(\d+)/);
+      const offerId = r?.offerId;
+      if (!m || !offerId) continue;
+      const key = `${m[1].trim()}|${String(Number(m[2]))}`;
+      out.set(key, String(offerId));
+    } catch {}
+  }
+  return out;
+}
+
+async function fetchDraftImages(offerId: string | null): Promise<string[]> {
+  if (!offerId) return [];
+  try {
+    const token = await ebayToken();
+    const H = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept-Language': 'en-US' };
+    const base = ebayBase();
+    const ro = await fetch(`${base}/sell/inventory/v1/offer/${offerId}`, { headers: H, cache: 'no-store' });
+    if (!ro.ok) return [];
+    const offer = await ro.json();
+    const sku = offer?.sku;
+    if (!sku) return [];
+    const ri = await fetch(`${base}/sell/inventory/v1/inventory_item/${sku}`, { headers: H, cache: 'no-store' });
+    if (!ri.ok) return [];
+    const inv = await ri.json();
+    const urls = Array.isArray(inv?.product?.imageUrls) ? inv.product.imageUrls : [];
+    return Array.from(new Set(urls.map((u: any) => String(u)).filter(Boolean)));
+  } catch {
+    return [];
   }
 }
 
@@ -98,11 +151,18 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   const activeEvidence = active.map((r) => ({ ...r, is_raw: compIsRaw(r), url: r.url || extractListingUrl(r.raw_payload) }));
   const priced = { ...comic, ...decisionForRow(comic) };
 
+  const offerIndex = loadOfferIndex();
+  const offerKey = `${String(comic.title || '').trim().toLowerCase()}|${parseIssueNum(comic.issue)}`;
+  const offerId = offerIndex.get(offerKey) || null;
+  const ourImages = await fetchDraftImages(offerId);
+
   return NextResponse.json({
     comic: { ...comic, ...priced },
     sold_evidence: soldEvidence,
     active_evidence: activeEvidence,
     sold_count: soldEvidence.length,
     active_count: activeEvidence.length,
+    offer_id: offerId,
+    our_images: ourImages,
   });
 }

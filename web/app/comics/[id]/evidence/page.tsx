@@ -7,6 +7,8 @@ type Evidence = {
   active_evidence: any[];
   sold_count: number;
   active_count: number;
+  our_images?: string[];
+  offer_id?: string | null;
 };
 
 async function getEvidence(id: string): Promise<Evidence> {
@@ -34,6 +36,21 @@ export default async function EvidencePage({ params }: { params: { id: string } 
           <span><b>Sold rows:</b> {data.sold_count ?? 0}</span>
           <span><b>Active rows:</b> {data.active_count ?? 0}</span>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Our listing photos{data.offer_id ? ` (draft ${data.offer_id})` : ''}</h3>
+        {Array.isArray(data.our_images) && data.our_images.length ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {data.our_images.map((u) => (
+              <a key={u} href={u} target="_blank" rel="noreferrer">
+                <img src={u} alt="our listing" style={{ width: 130, height: 170, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="muted">No draft photos found for this issue yet.</div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, marginBottom: 12 }}>
