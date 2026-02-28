@@ -67,6 +67,18 @@ export default async function EvidencePage({ params }: { params: { id: string } 
 
       <div className="card" style={{ marginBottom: 12, overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Sold evidence</h3>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          {(data.sold_evidence || []).map((e, i) => {
+            const thumb = compThumb(e);
+            const cid = e.comp_id ?? i;
+            if (!thumb) return null;
+            return (
+              <a key={`sold-thumb-${cid}`} href={thumb} target="_blank" rel="noreferrer" className="comp-thumb" data-row-id={`sold-row-${cid}`}>
+                <img src={thumb} alt="sold thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} />
+              </a>
+            );
+          })}
+        </div>
         <table className="table">
           <thead>
             <tr><th>#</th><th>Thumb</th><th>Title</th><th>Price</th><th>Ship</th><th>Total</th><th>Date</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
@@ -76,7 +88,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
               const thumb = compThumb(e);
               return (
-                <tr key={e.comp_id ?? i} id={`sold-row-${e.comp_id ?? i}`}>
+                <tr key={e.comp_id ?? i} id={`sold-row-${e.comp_id ?? i}`} data-row-id={`sold-row-${e.comp_id ?? i}`}>
                   <td>{e.rank ?? i + 1}</td>
                   <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
@@ -95,10 +107,25 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </table>
       </div>
 
-      <style>{`tr.comp-highlight { background: #fff7d6; }`}</style>
+      <style>{`
+        tr.comp-highlight { background: #fff7d6; }
+        .comp-thumb.active img { outline: 2px solid #f59e0b; outline-offset: 1px; }
+      `}</style>
 
       <div className="card" style={{ overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Active / offered evidence</h3>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          {(data.active_evidence || []).map((e, i) => {
+            const thumb = compThumb(e);
+            const cid = e.comp_id ?? i;
+            if (!thumb) return null;
+            return (
+              <a key={`active-thumb-${cid}`} href={thumb} target="_blank" rel="noreferrer" className="comp-thumb" data-row-id={`active-row-${cid}`}>
+                <img src={thumb} alt="active thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} />
+              </a>
+            );
+          })}
+        </div>
         <table className="table">
           <thead>
             <tr><th>Thumb</th><th>Title</th><th>Ask</th><th>Ship</th><th>Total</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
@@ -108,7 +135,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
               const thumb = compThumb(e);
               return (
-                <tr key={e.comp_id ?? i} id={`active-row-${e.comp_id ?? i}`}>
+                <tr key={e.comp_id ?? i} id={`active-row-${e.comp_id ?? i}`} data-row-id={`active-row-${e.comp_id ?? i}`}>
                   <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
                   <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
@@ -124,6 +151,40 @@ export default async function EvidencePage({ params }: { params: { id: string } 
           </tbody>
         </table>
       </div>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(() => {
+            const clear = () => {
+              document.querySelectorAll('tr.comp-highlight').forEach(el => el.classList.remove('comp-highlight'));
+              document.querySelectorAll('.comp-thumb.active').forEach(el => el.classList.remove('active'));
+            };
+            const activate = (rowId) => {
+              if (!rowId) return;
+              const row = document.getElementById(rowId);
+              const thumb = document.querySelector('.comp-thumb[data-row-id="' + rowId + '"]');
+              if (row) row.classList.add('comp-highlight');
+              if (thumb) thumb.classList.add('active');
+            };
+
+            document.querySelectorAll('.comp-thumb[data-row-id]').forEach((el) => {
+              el.addEventListener('mouseenter', () => {
+                clear();
+                activate(el.getAttribute('data-row-id'));
+              });
+              el.addEventListener('mouseleave', clear);
+            });
+
+            document.querySelectorAll('tr[data-row-id]').forEach((row) => {
+              row.addEventListener('mouseenter', () => {
+                clear();
+                activate(row.getAttribute('data-row-id'));
+              });
+              row.addEventListener('mouseleave', clear);
+            });
+          })();`,
+        }}
+      />
     </main>
   );
 }
