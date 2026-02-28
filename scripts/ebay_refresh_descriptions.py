@@ -26,6 +26,7 @@ KEY = {
     ('amazing spider-man', '25'): 'Amazing Spider-Man #25 features the first cameo appearance of Mary Jane Watson, a key moment in Spider-Man continuity.',
     ('amazing spider-man', '26'): 'Amazing Spider-Man #26 is a key Silver Age issue featuring the first appearance of the Crime-Master and an early Green Goblin appearance.',
     ('amazing spider-man', '27'): 'Amazing Spider-Man #27 is an early Silver Age Spider-Man issue tied to the Green Goblin/Crime-Master storyline.',
+    ('x-men', '23'): 'X-Men #23 features the first full appearance of the Juggernaut, a major Silver Age villain key.',
 }
 
 

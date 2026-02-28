@@ -38,6 +38,7 @@ KEY_ISSUE_NOTES = {
     ('fantastic four', '49'): 'First full Galactus.',
     ('fantastic four', '50'): 'Silver Surfer turns against Galactus.',
     ('fantastic four', '52'): 'First appearance of Black Panther.',
+    ('x-men', '23'): 'Features the first full appearance of the Juggernaut, one of the key Silver Age X-Men villain issues.',
 }
 
 
