@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-type P = { grade_numeric?: number | null; price?: number | null; title?: string; is_raw?: number | boolean };
+type P = { grade_numeric?: number | null; price?: number | null; title?: string; is_raw?: number | boolean; comp_id?: number | string };
 
 function median(vals: number[]) {
   const s = [...vals].sort((a, b) => a - b);
@@ -55,13 +55,13 @@ function interpPrice(series: Array<{ g: number; p: number }>, g: number) {
   return null;
 }
 
-export default function EvidenceChart({ points, grade, price, title }: { points: P[]; grade?: number | null; price?: number | null; title: string }) {
+export default function EvidenceChart({ points, grade, price, title, tableKey }: { points: P[]; grade?: number | null; price?: number | null; title: string; tableKey?: 'sold' | 'active' }) {
   const w = 560, h = 250, pad = 30;
 
   const data = useMemo(() => (
     (points || [])
       .filter((p) => p.grade_numeric != null && p.price != null)
-      .map((p) => ({ g: Number(p.grade_numeric), p: Number(p.price), raw: !!p.is_raw, t: p.title || '' }))
+      .map((p) => ({ g: Number(p.grade_numeric), p: Number(p.price), raw: !!p.is_raw, t: p.title || '', compId: p.comp_id }))
   ), [points]);
 
   if (!data.length) return <div className="card"><b>{title}</b><div className="muted">No chartable points.</div></div>;
@@ -118,7 +118,24 @@ export default function EvidenceChart({ points, grade, price, title }: { points:
         {rawPath ? <path d={rawPath} fill="none" stroke="#b91c1c" strokeWidth="2" opacity="0.95" /> : null}
 
         {data.map((d, i) => (
-          <circle key={i} cx={sx(d.g)} cy={sy(d.p)} r="4.8" fill={d.raw ? '#dc2626' : '#2563eb'}>
+          <circle
+            key={i}
+            cx={sx(d.g)}
+            cy={sy(d.p)}
+            r="4.8"
+            fill={d.raw ? '#dc2626' : '#2563eb'}
+            style={{ cursor: d.compId != null ? 'pointer' : 'default' }}
+            onClick={() => {
+              if (tableKey == null || d.compId == null) return;
+              const id = `${tableKey}-row-${d.compId}`;
+              document.querySelectorAll('tr.comp-highlight').forEach((el) => el.classList.remove('comp-highlight'));
+              const row = document.getElementById(id);
+              if (row) {
+                row.classList.add('comp-highlight');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }}
+          >
             <title>{`${d.raw ? 'RAW' : 'SLAB/UNSPEC'} • G ${d.g} • $${d.p.toFixed(2)} • ${d.t}`}</title>
           </circle>
         ))}

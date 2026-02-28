@@ -54,12 +54,14 @@ export default async function EvidencePage({ params }: { params: { id: string } 
           points={data.sold_evidence || []}
           grade={c.grade_numeric}
           price={c.market_price}
+          tableKey="sold"
         />
         <EvidenceChart
           title="Active / offer curve"
           points={data.active_evidence || []}
           grade={c.grade_numeric}
           price={c.active_anchor_price}
+          tableKey="active"
         />
       </div>
 
@@ -74,7 +76,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
               const thumb = compThumb(e);
               return (
-                <tr key={e.comp_id ?? i}>
+                <tr key={e.comp_id ?? i} id={`sold-row-${e.comp_id ?? i}`}>
                   <td>{e.rank ?? i + 1}</td>
                   <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
@@ -93,6 +95,8 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </table>
       </div>
 
+      <style>{`tr.comp-highlight { background: #fff7d6; }`}</style>
+
       <div className="card" style={{ overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Active / offered evidence</h3>
         <table className="table">
@@ -104,7 +108,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
               const thumb = compThumb(e);
               return (
-                <tr key={e.comp_id ?? i}>
+                <tr key={e.comp_id ?? i} id={`active-row-${e.comp_id ?? i}`}>
                   <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
                   <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
