@@ -196,6 +196,10 @@ export default function DashboardClient() {
   }, [rows, f, sortField, sortDir]);
 
   const money = (v: any) => (v != null && v !== "" ? `$${Number(v).toFixed(2)}` : "");
+  const selectionMarketTotal = useMemo(
+    () => filtered.reduce((acc: number, r: any) => acc + (Number(r?.market_price || 0) || 0), 0),
+    [filtered]
+  );
 
   return (
     <>
@@ -259,7 +263,8 @@ export default function DashboardClient() {
         ) : null}
       </div>
 
-      <div className="muted" style={{ marginBottom: 8 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
+      <div className="muted" style={{ marginBottom: 4 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
+      <div className="muted" style={{ marginBottom: 8 }}>Selection market value total: ${selectionMarketTotal.toFixed(2)}</div>
       {error ? <div style={{ color: "#b91c1c", marginBottom: 8 }}>API error: {error}</div> : null}
       {modalSrc ? (
         <div onClick={() => setModalSrc("")} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, cursor: "zoom-out" }}>
