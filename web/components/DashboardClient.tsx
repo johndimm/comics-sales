@@ -323,9 +323,9 @@ export default function DashboardClient() {
                 <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" onClick={() => setModalSrc(fullImageUrl(String(r.thumb_url)))} style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "zoom-in" }} /> : ""}</td>
                 <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">{r.title}</a></td>
                 <td>{r.issue}</td>
-                <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">view ↗</a></td>
-                <td><a href={`/comics/${r.id}/listing`} target="workbench_tab">listing ↗</a></td>
-                <td>{r.api_offer_id ? <a href={`/drafts/${r.api_offer_id}`} target="workbench_tab">draft ↗</a> : ""}</td>
+                <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab" style={{ display: "inline-block", padding: "4px 10px", border: "1px solid #cbd5e1", borderRadius: 8, background: "#fff" }}>Evidence</a></td>
+                <td><a href={`/comics/${r.id}/listing`} target="workbench_tab" style={{ display: "inline-block", padding: "4px 10px", border: "1px solid #cbd5e1", borderRadius: 8, background: "#fff" }}>Listing</a></td>
+                <td>{r.api_offer_id ? <a href={`/drafts/${r.api_offer_id}`} target="workbench_tab" style={{ display: "inline-block", padding: "4px 10px", border: "1px solid #cbd5e1", borderRadius: 8, background: "#fff" }}>Draft</a> : ""}</td>
                 <td>{r.grade_class ?? ""}</td>
                 <td>{r.grade_numeric ?? ""}</td>
                 <td>{money(r.universal_market_price)}</td>
