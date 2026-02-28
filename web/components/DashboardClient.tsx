@@ -205,7 +205,7 @@ export default function DashboardClient() {
           <label><input type="checkbox" checked={f.slabbed} onChange={(e) => setF({ ...f, slabbed: e.target.checked })} /> slabbed</label>
           <label><input type="checkbox" checked={f.rawCommunity} onChange={(e) => setF({ ...f, rawCommunity: e.target.checked })} /> raw_community</label>
           <label><input type="checkbox" checked={f.rawNoCommunity} onChange={(e) => setF({ ...f, rawNoCommunity: e.target.checked })} /> raw_no_community</label>
-          <button onClick={load}>Reload</button>
+          <button onClick={load}>Search</button>
           <button onClick={saveSearch}>Save search</button>
           <button onClick={() => setF(initial)}>Clear</button>
         </div>
@@ -232,6 +232,20 @@ export default function DashboardClient() {
           <input placeholder="min" value={f.rangeMin} onChange={(e) => setF({ ...f, rangeMin: e.target.value })} style={{ width: 90 }} />
           <input placeholder="max" value={f.rangeMax} onChange={(e) => setF({ ...f, rangeMax: e.target.value })} style={{ width: 90 }} />
         </div>
+        <div className="toolbar" style={{ gap: 6 }}>
+          <span className="muted">Titles:</span>
+          <button onClick={() => setF({ ...f, titlePick: "" })} style={{ background: f.titlePick ? "#fff" : "#eef2ff" }}>All</button>
+          {titles.map((t) => (
+            <button
+              key={`title-chip-${t}`}
+              onClick={() => setF({ ...f, titlePick: t })}
+              style={{ background: f.titlePick === t ? "#eef2ff" : "#fff" }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
         {savedSearches.length ? (
           <div className="toolbar">
             <span className="muted">Saved:</span>
