@@ -60,6 +60,17 @@ export default function DashboardClient() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [modalSrc, setModalSrc] = useState<string>("");
 
+  const exactValueOptions = useMemo(() => {
+    if (!f.exactCol) return [] as string[];
+    const vals = new Set<string>();
+    for (const r of rows as any[]) {
+      const v = r?.[f.exactCol];
+      if (v == null || v === '') continue;
+      vals.add(String(v));
+    }
+    return Array.from(vals).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+  }, [rows, f.exactCol]);
+
   async function load() {
     setLoading(true);
     setError("");
@@ -221,14 +232,19 @@ export default function DashboardClient() {
             <option value="">All titles</option>
             {rowTitles.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={f.exactCol} onChange={(e) => setF({ ...f, exactCol: e.target.value })}>
+          <select value={f.exactCol} onChange={(e) => setF({ ...f, exactCol: e.target.value, exactVal: "" })}>
             <option value="">Exact column</option>
             <option value="title">title</option>
+            <option value="issue">issue</option>
             <option value="grade_class">grade_class</option>
+            <option value="qualified_flag">qualified_flag</option>
             <option value="action">action</option>
             <option value="trend">trend</option>
           </select>
-          <input placeholder="Exact value" value={f.exactVal} onChange={(e) => setF({ ...f, exactVal: e.target.value })} />
+          <select value={f.exactVal} onChange={(e) => setF({ ...f, exactVal: e.target.value })}>
+            <option value="">Exact value (any)</option>
+            {exactValueOptions.map((v) => <option key={`exact-${v}`} value={v}>{v}</option>)}
+          </select>
           <select value={f.rangeCol} onChange={(e) => setF({ ...f, rangeCol: e.target.value })}>
             <option value="">Range column</option>
             <option value="market_price">market_price</option>
