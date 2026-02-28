@@ -24,7 +24,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
     <main className="container">
       <div className="toolbar" style={{ justifyContent: 'space-between' }}>
         <h1 style={{ margin: 0 }}>Evidence: {c.title} #{c.issue}</h1>
-        <Link href="/">← Dashboard</Link>
+        <Link href="/" target="dashboard_tab">← Dashboard</Link>
       </div>
 
       <div className="card" style={{ marginBottom: 12 }}>

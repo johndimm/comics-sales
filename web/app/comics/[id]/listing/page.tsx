@@ -75,8 +75,8 @@ export default async function ListingPage({ params }: { params: { id: string } }
       <div className="toolbar" style={{ justifyContent: 'space-between' }}>
         <h1 style={{ margin: 0 }}>Listing Plan</h1>
         <div className="toolbar" style={{ marginBottom: 0 }}>
-          <Link href={`/comics/${comicId}/evidence`}>Evidence</Link>
-          <Link href="/">Dashboard</Link>
+          <Link href={`/comics/${comicId}/evidence`} target="workbench_tab">Evidence</Link>
+          <Link href="/" target="dashboard_tab">Dashboard</Link>
         </div>
       </div>
 
