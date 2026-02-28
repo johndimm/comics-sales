@@ -346,7 +346,7 @@ export default function DashboardClient() {
                 <td>{r.grade_class ?? ""}</td>
                 <td>{r.grade_numeric ?? ""}</td>
                 <td>{money(r.universal_market_price)}</td>
-                <td>{money(r.qualified_market_price)}</td>
+                <td>{r.qualified_flag ? money(r.qualified_market_price) : ""}</td>
                 <td>{money(r.market_price)}</td>
                 <td><b>{money(r.target_price)}</b></td>
                 <td>{money(r.net_raw)}</td>
