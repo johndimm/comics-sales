@@ -1,6 +1,15 @@
 import Link from 'next/link';
 import EvidenceChart from '@/components/EvidenceChart';
 
+function compThumb(e: any): string | null {
+  try {
+    const p = typeof e?.raw_payload === 'string' ? JSON.parse(e.raw_payload) : null;
+    return p?.image?.imageUrl || p?.thumbnailImages?.[0]?.imageUrl || p?.additionalImages?.[0]?.imageUrl || null;
+  } catch {
+    return null;
+  }
+}
+
 type Evidence = {
   comic: any;
   sold_evidence: any[];
@@ -38,20 +47,6 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 12 }}>
-        <h3 style={{ marginTop: 0 }}>Our listing photos{data.offer_id ? ` (draft ${data.offer_id})` : ''}</h3>
-        {Array.isArray(data.our_images) && data.our_images.length ? (
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {data.our_images.map((u) => (
-              <a key={u} href={u} target="_blank" rel="noreferrer">
-                <img src={u} alt="our listing" style={{ width: 130, height: 170, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
-              </a>
-            ))}
-          </div>
-        ) : (
-          <div className="muted">No draft photos found for this issue yet.</div>
-        )}
-      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, marginBottom: 12 }}>
         <EvidenceChart
@@ -72,14 +67,16 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         <h3 style={{ marginTop: 0 }}>Sold evidence</h3>
         <table className="table">
           <thead>
-            <tr><th>#</th><th>Title</th><th>Price</th><th>Ship</th><th>Total</th><th>Date</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
+            <tr><th>#</th><th>Thumb</th><th>Title</th><th>Price</th><th>Ship</th><th>Total</th><th>Date</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
           </thead>
           <tbody>
             {(data.sold_evidence || []).map((e, i) => {
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
+              const thumb = compThumb(e);
               return (
                 <tr key={e.comp_id ?? i}>
                   <td>{e.rank ?? i + 1}</td>
+                  <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
                   <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
                   <td>{e.shipping != null ? `$${Number(e.shipping).toFixed(2)}` : ''}</td>
@@ -100,13 +97,15 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         <h3 style={{ marginTop: 0 }}>Active / offered evidence</h3>
         <table className="table">
           <thead>
-            <tr><th>Title</th><th>Ask</th><th>Ship</th><th>Total</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
+            <tr><th>Thumb</th><th>Title</th><th>Ask</th><th>Ship</th><th>Total</th><th>Grade</th><th>Company</th><th>Score</th><th>Link</th></tr>
           </thead>
           <tbody>
             {(data.active_evidence || []).map((e, i) => {
               const total = (Number(e.price || 0) + Number(e.shipping || 0)) || null;
+              const thumb = compThumb(e);
               return (
                 <tr key={e.comp_id ?? i}>
+                  <td>{thumb ? <a href={thumb} target="_blank" rel="noreferrer"><img src={thumb} alt="thumb" style={{ width: 44, height: 58, objectFit: 'cover', border: '1px solid #e5e7eb', borderRadius: 6 }} /></a> : ''}</td>
                   <td>{e.title}</td>
                   <td>{e.price != null ? `$${Number(e.price).toFixed(2)}` : ''}</td>
                   <td>{e.shipping != null ? `$${Number(e.shipping).toFixed(2)}` : ''}</td>
