@@ -56,7 +56,6 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [f, setF] = useState<Filters>(initial);
-  const [titles, setTitles] = useState<string[]>([]);
   const [sortField, setSortField] = useState<string>("market_price");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [modalSrc, setModalSrc] = useState<string>("");
@@ -96,12 +95,14 @@ export default function DashboardClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f.limit, f.slabbed, f.rawCommunity, f.rawNoCommunity]);
 
-  useEffect(() => {
-    fetch("/api/titles", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => setTitles(Array.isArray(d) ? d : []))
-      .catch(() => setTitles([]));
-  }, []);
+  const rowTitles = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of rows as any[]) {
+      const t = String(r?.title ?? '').trim();
+      if (t) s.add(t);
+    }
+    return Array.from(s).sort((a, b) => a.localeCompare(b));
+  }, [rows]);
 
   const [savedVersion, setSavedVersion] = useState(0);
   const savedSearches = useMemo(() => {
@@ -216,7 +217,7 @@ export default function DashboardClient() {
         <div className="toolbar">
           <select value={f.titlePick} onChange={(e) => setF({ ...f, titlePick: e.target.value })}>
             <option value="">All titles</option>
-            {titles.map((t) => <option key={t} value={t}>{t}</option>)}
+            {rowTitles.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <select value={f.exactCol} onChange={(e) => setF({ ...f, exactCol: e.target.value })}>
             <option value="">Exact column</option>
@@ -239,7 +240,7 @@ export default function DashboardClient() {
         <div className="toolbar" style={{ gap: 6 }}>
           <span className="muted">Titles:</span>
           <button onClick={() => setF({ ...f, titlePick: "" })} style={{ background: f.titlePick ? "#fff" : "#eef2ff" }}>All</button>
-          {titles.map((t) => (
+          {rowTitles.map((t) => (
             <button
               key={`title-chip-${t}`}
               onClick={() => setF({ ...f, titlePick: t })}
