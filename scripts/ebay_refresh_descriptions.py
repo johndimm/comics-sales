@@ -16,6 +16,7 @@ LEDGER = Path('data/api_offer_ledger.jsonl')
 
 KEY = {
     ('fantastic four', '55'): 'Fantastic Four #55 is a Lee/Kirby-era Silver Age issue featuring Klaw and Black Panther, with strong long-run collector demand.',
+    ('fantastic four', '56'): 'Fantastic Four #56 is a Lee/Kirby-era Doctor Doom and Klaw storyline issue tied to early Wakanda/Black Panther continuity.',
     ('fantastic four', '58'): 'Fantastic Four #58 is a Silver Age Fantastic Four issue from the Inhumans/Doctor Doom era with consistent collector demand.',
     ('fantastic four', '78'): 'Fantastic Four #78 is a late Lee/Kirby-era Silver Age issue featuring Doctor Doom, with steady collector demand.',
     ('amazing spider-man', '20'): 'Amazing Spider-Man #20 is a key Silver Age issue featuring the first appearance and origin of the Scorpion (Mac Gargan).',
@@ -75,11 +76,26 @@ def make_text(series: str, issue: str):
     i = issue_num(issue)
     if (s, i) in KEY:
         return KEY[(s, i)]
+
+    try:
+        inum = int(i)
+    except Exception:
+        inum = None
+
     if s == 'amazing spider-man':
-        return f'Amazing Spider-Man #{i} is from the core Silver Age run, with value driven heavily by grade and eye appeal.'
+        if inum is not None and inum <= 50:
+            return f'Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel\'s most collected runs.'
+        return f'Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums.'
+
     if s == 'fantastic four':
-        return f'Fantastic Four #{i} is from the classic Silver Age run, with enduring demand from run collectors.'
-    return f'{series} #{i} has collector demand, with value mainly driven by condition and presentation.'
+        if inum is not None and inum <= 102:
+            return f'Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand.'
+        return f'Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade.'
+
+    if s == 'x-men':
+        return f'X-Men #{i} is from Marvel\'s core mutant run, where condition and page quality materially impact value.'
+
+    return f'{series} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition.'
 
 
 def parse_title_line(title: str):
