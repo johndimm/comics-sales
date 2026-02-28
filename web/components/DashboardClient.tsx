@@ -241,17 +241,20 @@ export default function DashboardClient() {
   return (
     <>
       <div className="card" style={{ marginBottom: 12 }}>
-        <div className="toolbar">
+        {savedSearches.length ? (
+          <div className="toolbar" style={{ marginBottom: 8 }}>
+            <span className="muted">Saved searches:</span>
+            {savedSearches.map((s: any, i: number) => (
+              <span key={`${s.name}-${i}`} className="toolbar" style={{ gap: 4 }}>
+                <button onClick={() => runSearch(i)}>{s.name}</button>
+                <button onClick={() => delSearch(i)}>x</button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="toolbar" style={{ alignItems: 'end', flexWrap: 'wrap' }}>
           <label>Limit <input type="number" value={f.limit} onChange={(e) => setF({ ...f, limit: Number(e.target.value || 500) })} style={{ width: 90 }} /></label>
-          <button onClick={load}>Search</button>
-          <button onClick={saveSearch}>Save search</button>
-          <button onClick={() => setF(initial)}>Clear</button>
-        </div>
-        <div className="toolbar">
-          <select value={f.titlePick} onChange={(e) => setF({ ...f, titlePick: e.target.value })}>
-            <option value="">All titles</option>
-            {rowTitles.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
           <select value={f.exactCol} onChange={(e) => setF({ ...f, exactCol: e.target.value, exactVal: "" })}>
             <option value="">Exact column</option>
             <option value="title">title</option>
@@ -274,32 +277,26 @@ export default function DashboardClient() {
           </select>
           <input placeholder="min" value={f.rangeMin} onChange={(e) => setF({ ...f, rangeMin: e.target.value })} style={{ width: 90 }} />
           <input placeholder="max" value={f.rangeMax} onChange={(e) => setF({ ...f, rangeMax: e.target.value })} style={{ width: 90 }} />
-        </div>
-        <div className="toolbar" style={{ gap: 6 }}>
-          <span className="muted">Titles:</span>
-          <button onClick={() => setF({ ...f, titlePick: "" })} style={{ background: f.titlePick ? "#fff" : "#eef2ff" }}>All</button>
-          {rowTitles.map((t) => (
-            <button
-              key={`title-chip-${t}`}
-              onClick={() => setF({ ...f, titlePick: t })}
-              style={{ background: f.titlePick === t ? "#eef2ff" : "#fff" }}
-            >
-              {t}
-            </button>
-          ))}
+          <button onClick={load}>Search</button>
+          <button onClick={() => setF(initial)}>Clear</button>
+          <button onClick={saveSearch}>Save search</button>
         </div>
 
-        {savedSearches.length ? (
-          <div className="toolbar">
-            <span className="muted">Saved:</span>
-            {savedSearches.map((s: any, i: number) => (
-              <span key={`${s.name}-${i}`} className="toolbar" style={{ gap: 4 }}>
-                <button onClick={() => runSearch(i)}>{s.name}</button>
-                <button onClick={() => delSearch(i)}>x</button>
-              </span>
+        <div style={{ marginTop: 10, padding: 10, border: '1px solid #e5e7eb', borderRadius: 10, background: '#f8fafc' }}>
+          <div className="muted" style={{ marginBottom: 6 }}>Titles (quick filter)</div>
+          <div className="toolbar" style={{ gap: 6 }}>
+            <button onClick={() => setF({ ...f, titlePick: "" })} style={{ background: f.titlePick ? "#fff" : "#eef2ff" }}>All</button>
+            {rowTitles.map((t) => (
+              <button
+                key={`title-chip-${t}`}
+                onClick={() => setF({ ...f, titlePick: t })}
+                style={{ background: f.titlePick === t ? "#eef2ff" : "#fff" }}
+              >
+                {t}
+              </button>
             ))}
           </div>
-        ) : null}
+        </div>
       </div>
 
       <div className="muted" style={{ marginBottom: 4 }}>{loading ? "Loading..." : `${filtered.length} rows`}</div>
