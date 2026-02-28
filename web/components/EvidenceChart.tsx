@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 type P = { grade_numeric?: number | null; price?: number | null; title?: string; is_raw?: number | boolean; comp_id?: number | string };
 
@@ -57,6 +57,7 @@ function interpPrice(series: Array<{ g: number; p: number }>, g: number) {
 
 export default function EvidenceChart({ points, grade, price, title, tableKey }: { points: P[]; grade?: number | null; price?: number | null; title: string; tableKey?: 'sold' | 'active' }) {
   const w = 560, h = 250, pad = 30;
+  const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null);
 
   const data = useMemo(() => (
     (points || [])
@@ -97,9 +98,30 @@ export default function EvidenceChart({ points, grade, price, title, tableKey }:
   const end = Math.floor(y1 / 100) * 100;
 
   return (
-    <div className="card" style={{ marginBottom: 12 }}>
+    <div className="card" style={{ marginBottom: 12, position: 'relative' }}>
       <b>{title}</b>
-      <svg viewBox={`0 0 ${w} ${h}`} width="100%" height="250" style={{ display: 'block', marginTop: 8 }}>
+      {tip ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: tip.x + 12,
+            top: tip.y + 12,
+            background: 'rgba(17,24,39,.95)',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,.25)',
+            borderRadius: 10,
+            padding: '10px 12px',
+            fontSize: 14,
+            lineHeight: 1.35,
+            maxWidth: 420,
+            zIndex: 20,
+            pointerEvents: 'none',
+          }}
+        >
+          {tip.text}
+        </div>
+      ) : null}
+      <svg viewBox={`0 0 ${w} ${h}`} width="100%" height="250" style={{ display: 'block', marginTop: 8 }} onMouseLeave={() => setTip(null)}>
         <rect x="0" y="0" width={w} height={h} fill="#fff" />
         {Array.from({ length: end >= start ? Math.floor((end - start) / 100) + 1 : 0 }).map((_, i) => {
           const gy = start + i * 100;
@@ -125,6 +147,8 @@ export default function EvidenceChart({ points, grade, price, title, tableKey }:
             r="4.8"
             fill={d.raw ? '#dc2626' : '#2563eb'}
             style={{ cursor: d.compId != null ? 'pointer' : 'default' }}
+            onMouseEnter={(e) => setTip({ x: e.clientX, y: e.clientY, text: `${d.raw ? 'RAW' : 'SLAB/UNSPEC'} • G ${d.g} • $${d.p.toFixed(2)} • ${d.t}` })}
+            onMouseMove={(e) => setTip((t) => (t ? { ...t, x: e.clientX, y: e.clientY } : t))}
             onClick={() => {
               if (tableKey == null || d.compId == null) return;
               const id = `${tableKey}-row-${d.compId}`;
