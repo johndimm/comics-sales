@@ -107,10 +107,7 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </table>
       </div>
 
-      <style>{`
-        tr.comp-highlight { background: #fff7d6; }
-        .comp-thumb.active img { outline: 2px solid #f59e0b; outline-offset: 1px; }
-      `}</style>
+      <style>{`tr.comp-highlight { background: #fff7d6; }`}</style>
 
       <div className="card" style={{ overflowX: 'auto' }}>
         <h3 style={{ marginTop: 0 }}>Active / offered evidence</h3>
@@ -152,39 +149,6 @@ export default async function EvidencePage({ params }: { params: { id: string } 
         </table>
       </div>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(() => {
-            const clear = () => {
-              document.querySelectorAll('tr.comp-highlight').forEach(el => el.classList.remove('comp-highlight'));
-              document.querySelectorAll('.comp-thumb.active').forEach(el => el.classList.remove('active'));
-            };
-            const activate = (rowId) => {
-              if (!rowId) return;
-              const row = document.getElementById(rowId);
-              const thumb = document.querySelector('.comp-thumb[data-row-id="' + rowId + '"]');
-              if (row) row.classList.add('comp-highlight');
-              if (thumb) thumb.classList.add('active');
-            };
-
-            document.querySelectorAll('.comp-thumb[data-row-id]').forEach((el) => {
-              el.addEventListener('mouseenter', () => {
-                clear();
-                activate(el.getAttribute('data-row-id'));
-              });
-              el.addEventListener('mouseleave', clear);
-            });
-
-            document.querySelectorAll('tr[data-row-id]').forEach((row) => {
-              row.addEventListener('mouseenter', () => {
-                clear();
-                activate(row.getAttribute('data-row-id'));
-              });
-              row.addEventListener('mouseleave', clear);
-            });
-          })();`,
-        }}
-      />
     </main>
   );
 }
