@@ -197,6 +197,11 @@ export default function DashboardClient() {
   }, [rows, f, sortField, sortDir]);
 
   const money = (v: any) => (v != null && v !== "" ? `$${Number(v).toFixed(2)}` : "");
+  const fullImageUrl = (u: string) => {
+    if (!u) return u;
+    // eBay image URLs often contain size markers like s-l64/s-l300; bump to high-res.
+    return u.replace(/s-l\d+/g, "s-l1600");
+  };
   const selectionMarketTotal = useMemo(
     () => filtered.reduce((acc: number, r: any) => acc + (Number(r?.market_price || 0) || 0), 0),
     [filtered]
@@ -299,7 +304,7 @@ export default function DashboardClient() {
           <tbody>
             {filtered.map((r) => (
               <tr key={r.id}>
-                <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" onClick={() => setModalSrc(String(r.thumb_url))} style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "zoom-in" }} /> : ""}</td>
+                <td>{r.thumb_url ? <img src={r.thumb_url} alt="thumb" onClick={() => setModalSrc(fullImageUrl(String(r.thumb_url)))} style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "zoom-in" }} /> : ""}</td>
                 <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">{r.title}</a></td>
                 <td>{r.issue}</td>
                 <td><a href={`/comics/${r.id}/evidence`} target="workbench_tab">view ↗</a></td>
