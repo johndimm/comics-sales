@@ -22,6 +22,7 @@ DB = Path('data/comics.db')
 LEDGER = Path('data/api_offer_ledger.jsonl')
 SRC_ROOT = Path('/home/john-dimm/Comics/comic-photos/PleaseGradeMe')
 UP_ROOT = Path('/home/john-dimm/uploads')
+CGC_PHOTO_ROOT = Path('data/cgc-photos')
 
 SERIES_PREFIX = {
     'amazing spider-man': 'asm',
@@ -156,7 +157,39 @@ def dynamic_ask_multiplier(row):
     return max(1.03, min(1.18, m))
 
 
-def upload_eps(token, img_dir: Path):
+def select_image_paths(folder: str, up_dir: Path | None) -> list[Path]:
+    exts = {'.jpg', '.jpeg', '.png', '.webp'}
+
+    # 1) Preferred: curated per-book upload folder.
+    if up_dir and up_dir.exists():
+        paths = [p for p in sorted(up_dir.iterdir()) if p.is_file() and p.suffix.lower() in exts]
+        if paths:
+            return paths
+
+    # 2) Fallback: data/cgc-photos naming style (e.g., ff38_OBV.jpg, ff38_REV.jpg).
+    if folder and CGC_PHOTO_ROOT.exists():
+        pats = [
+            f'{folder}_OBV.*',
+            f'{folder}_REV.*',
+            f'{folder}_*.*',
+            f'{folder.upper()}_OBV.*',
+            f'{folder.upper()}_REV.*',
+            f'{folder.upper()}_*.*',
+        ]
+        found: list[Path] = []
+        seen = set()
+        for pat in pats:
+            for p in sorted(CGC_PHOTO_ROOT.glob(pat)):
+                if p.is_file() and p.suffix.lower() in exts and p not in seen:
+                    found.append(p)
+                    seen.add(p)
+        if found:
+            return found
+
+    return []
+
+
+def upload_eps(token, image_paths: list[Path]):
     headers = {
         'X-EBAY-API-CALL-NAME': 'UploadSiteHostedPictures',
         'X-EBAY-API-COMPATIBILITY-LEVEL': '1231',
@@ -165,7 +198,8 @@ def upload_eps(token, img_dir: Path):
     }
     ns = {'e': 'urn:ebay:apis:eBLBaseComponents'}
     urls = []
-    for p in sorted(glob.glob(str(img_dir / '*'))):
+    for pth in image_paths:
+        p = str(pth)
         if not os.path.isfile(p):
             continue
         xml = (
@@ -241,7 +275,8 @@ def main():
                 if p.is_file():
                     shutil.copy2(p, up_dir / p.name)
 
-        image_urls = upload_eps(token, up_dir) if up_dir and up_dir.exists() else []
+        image_paths = select_image_paths(folder or '', up_dir)
+        image_urls = upload_eps(token, image_paths) if image_paths else []
 
         grade = r['grade_numeric']
         slabbed = bool((r['cgc_cert'] or '').strip())
