@@ -76,7 +76,7 @@ def make_text(series: str, issue: str):
     s = series.lower().strip()
     i = issue_num(issue)
     if (s, i) in KEY:
-        return KEY[(s, i)]
+        return KEY[(s, i)] + ' Silver Age keys with recognizable storyline significance usually see stronger buyer interest and better liquidity in matching grade tiers.'
 
     try:
         inum = int(i)
@@ -85,18 +85,18 @@ def make_text(series: str, issue: str):
 
     if s == 'amazing spider-man':
         if inum is not None and inum <= 50:
-            return f'Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel\'s most collected runs.'
-        return f'Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums.'
+            return f'Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel\'s most collected runs. Early ASM demand is deep, and stronger copies usually command a premium over lower-grade comps.'
+        return f'Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums. Presentation and page quality often separate median sales from top-end realized prices.'
 
     if s == 'fantastic four':
         if inum is not None and inum <= 102:
-            return f'Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand.'
-        return f'Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade.'
+            return f'Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand. Early Marvel flagship issues with notable continuity ties tend to attract steady bidder activity.'
+        return f'Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade. Cleaner examples with strong centering and color generally perform better versus guide in active markets.'
 
     if s == 'x-men':
-        return f'X-Men #{i} is from Marvel\'s core mutant run, where condition and page quality materially impact value.'
+        return f'X-Men #{i} is from Marvel\'s core mutant run, where condition and page quality materially impact value. Early X-Men issues with key character relevance often move faster when accurately graded and well-photographed.'
 
-    return f'{series} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition.'
+    return f'{series} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition. Books with clear defects disclosed and strong imaging generally convert better and reduce post-sale friction.'
 
 
 def parse_title_line(title: str):
