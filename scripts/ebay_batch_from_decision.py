@@ -159,14 +159,20 @@ def dynamic_ask_multiplier(row):
 
 def select_image_paths(folder: str, up_dir: Path | None) -> list[Path]:
     exts = {'.jpg', '.jpeg', '.png', '.webp'}
+    merged: list[Path] = []
+    seen = set()
 
-    # 1) Preferred: curated per-book upload folder.
+    def add_path(p: Path):
+        if p.is_file() and p.suffix.lower() in exts and p not in seen:
+            merged.append(p)
+            seen.add(p)
+
+    # 1) Include curated per-book upload folder photos (Please Grade Me / raw set).
     if up_dir and up_dir.exists():
-        paths = [p for p in sorted(up_dir.iterdir()) if p.is_file() and p.suffix.lower() in exts]
-        if paths:
-            return paths
+        for p in sorted(up_dir.iterdir()):
+            add_path(p)
 
-    # 2) Fallback: data/cgc-photos naming style (e.g., ff38_OBV.jpg, ff38_REV.jpg).
+    # 2) Also include slabbed photo set from data/cgc-photos (additive, not fallback).
     if folder and CGC_PHOTO_ROOT.exists():
         pats = [
             f'{folder}_OBV.*',
@@ -176,17 +182,11 @@ def select_image_paths(folder: str, up_dir: Path | None) -> list[Path]:
             f'{folder.upper()}_REV.*',
             f'{folder.upper()}_*.*',
         ]
-        found: list[Path] = []
-        seen = set()
         for pat in pats:
             for p in sorted(CGC_PHOTO_ROOT.glob(pat)):
-                if p.is_file() and p.suffix.lower() in exts and p not in seen:
-                    found.append(p)
-                    seen.add(p)
-        if found:
-            return found
+                add_path(p)
 
-    return []
+    return merged
 
 
 def upload_eps(token, image_paths: list[Path]):
