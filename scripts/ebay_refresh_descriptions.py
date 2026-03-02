@@ -15,18 +15,19 @@ BASE = 'https://api.ebay.com' if (os.getenv('EBAY_ENV') or 'production').lower()
 LEDGER = Path('data/api_offer_ledger.jsonl')
 
 KEY = {
-    ('fantastic four', '55'): 'Fantastic Four #55 is a Lee/Kirby-era Silver Age issue featuring Klaw and Black Panther, with strong long-run collector demand.',
-    ('fantastic four', '56'): 'Fantastic Four #56 is a Lee/Kirby-era Doctor Doom and Klaw storyline issue tied to early Wakanda/Black Panther continuity.',
-    ('fantastic four', '58'): 'Fantastic Four #58 is a Silver Age Fantastic Four issue from the Inhumans/Doctor Doom era with consistent collector demand.',
-    ('fantastic four', '78'): 'Fantastic Four #78 is a late Lee/Kirby-era Silver Age issue featuring Doctor Doom, with steady collector demand.',
-    ('amazing spider-man', '20'): 'Amazing Spider-Man #20 is a key Silver Age issue featuring the first appearance and origin of the Scorpion (Mac Gargan).',
-    ('amazing spider-man', '22'): 'Amazing Spider-Man #22 features the first appearance of Princess Python and remains a notable early Silver Age Spidey issue.',
-    ('amazing spider-man', '23'): 'Amazing Spider-Man #23 is an early Green Goblin-era Silver Age issue with strong run-collector demand.',
-    ('amazing spider-man', '24'): 'Amazing Spider-Man #24 is a classic Ditko-era Silver Age issue with continued collector demand for strong copies.',
-    ('amazing spider-man', '25'): 'Amazing Spider-Man #25 features the first cameo appearance of Mary Jane Watson, a key moment in Spider-Man continuity.',
-    ('amazing spider-man', '26'): 'Amazing Spider-Man #26 is a key Silver Age issue featuring the first appearance of the Crime-Master and an early Green Goblin appearance.',
-    ('amazing spider-man', '27'): 'Amazing Spider-Man #27 is an early Silver Age Spider-Man issue tied to the Green Goblin/Crime-Master storyline.',
-    ('x-men', '23'): 'X-Men #23 features the first full appearance of the Juggernaut, a major Silver Age villain key.',
+    ('fantastic four', '55'): 'Fantastic Four #55 is a Lee/Kirby-era Silver Age issue featuring Klaw and Black Panther.',
+    ('fantastic four', '56'): 'Fantastic Four #56 is part of the Lee/Kirby Doctor Doom and Klaw sequence that continues early Wakanda/Black Panther continuity from FF #52–53.',
+    ('fantastic four', '58'): 'Fantastic Four #58 is a Silver Age Fantastic Four issue from the Inhumans/Doctor Doom era.',
+    ('fantastic four', '78'): 'Fantastic Four #78 is a late Lee/Kirby-era Silver Age issue featuring Doctor Doom.',
+    ('amazing spider-man', '20'): 'Amazing Spider-Man #20 is a Silver Age issue featuring the first appearance and origin of the Scorpion (Mac Gargan).',
+    ('amazing spider-man', '22'): 'Amazing Spider-Man #22 features the first appearance of Princess Python.',
+    ('amazing spider-man', '23'): 'Amazing Spider-Man #23 is an early Green Goblin-era Silver Age issue.',
+    ('amazing spider-man', '24'): 'Amazing Spider-Man #24 is a classic Ditko-era Silver Age issue.',
+    ('amazing spider-man', '25'): 'Amazing Spider-Man #25 features the first cameo appearance of Mary Jane Watson, a notable continuity moment.',
+    ('amazing spider-man', '26'): 'Amazing Spider-Man #26 features the first appearance of the Crime-Master and an early Green Goblin appearance.',
+    ('amazing spider-man', '27'): 'Amazing Spider-Man #27 continues the Green Goblin/Crime-Master storyline.',
+    ('mighty thor', '134'): 'Mighty Thor #134 introduces the High Evolutionary (and the Man-Beast), a major addition to Thor\'s Wundagore mythology.',
+    ('x-men', '23'): 'X-Men #23 is a Silver Age original-team era issue from the Roy Thomas period with classic school-era X-Men storytelling.',
 }
 
 
@@ -76,7 +77,7 @@ def make_text(series: str, issue: str):
     s = series.lower().strip()
     i = issue_num(issue)
     if (s, i) in KEY:
-        return KEY[(s, i)] + ' Silver Age keys with recognizable storyline significance usually see stronger buyer interest and better liquidity in matching grade tiers.'
+        return KEY[(s, i)] + ' It sits in a well-known stretch of Marvel Silver Age continuity and reads as a strong character/story chapter even outside first-appearance collecting.'
 
     try:
         inum = int(i)
@@ -85,18 +86,18 @@ def make_text(series: str, issue: str):
 
     if s == 'amazing spider-man':
         if inum is not None and inum <= 50:
-            return f'Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel\'s most collected runs. Early ASM demand is deep, and stronger copies usually command a premium over lower-grade comps.'
-        return f'Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums. Presentation and page quality often separate median sales from top-end realized prices.'
+            return f'Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era with classic Peter Parker storytelling. It sits in the formative stretch of the title where many defining supporting characters and rivalries were established.'
+        return f'Amazing Spider-Man #{i} is a classic run issue with recognizable era-specific tone and artwork. It fits naturally in run-building for readers focused on foundational Spider-Man continuity.'
 
     if s == 'fantastic four':
         if inum is not None and inum <= 102:
-            return f'Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand. Early Marvel flagship issues with notable continuity ties tend to attract steady bidder activity.'
-        return f'Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade. Cleaner examples with strong centering and color generally perform better versus guide in active markets.'
+            return f'Fantastic Four #{i} is from the Lee/Kirby Silver Age run and sits in one of Marvel\'s foundational family/sci-fi eras. It connects to major long-form continuity threads that many FF readers specifically chase.'
+        return f'Fantastic Four #{i} is part of Marvel\'s classic FF run with strong creator-era identity. It works well as both a standalone Silver Age read and as a bridge issue within larger arcs.'
 
     if s == 'x-men':
-        return f'X-Men #{i} is from Marvel\'s core mutant run, where condition and page quality materially impact value. Early X-Men issues with key character relevance often move faster when accurately graded and well-photographed.'
+        return f'X-Men #{i} is from the original-team Silver Age period with early school-era mutant dynamics. It reflects the pre-relaunch voice of the title and has strong historical context within the franchise\'s first run.'
 
-    return f'{series} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition. Books with clear defects disclosed and strong imaging generally convert better and reduce post-sale friction.'
+    return f'{series} #{i} is a vintage issue with period-correct storytelling and artwork. It fits naturally for readers building era runs and for collectors who want classic Marvel continuity in original format.'
 
 
 def parse_title_line(title: str):

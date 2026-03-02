@@ -39,7 +39,9 @@ KEY_ISSUE_NOTES = {
     ('fantastic four', '49'): 'First full Galactus.',
     ('fantastic four', '50'): 'Silver Surfer turns against Galactus.',
     ('fantastic four', '52'): 'First appearance of Black Panther.',
-    ('x-men', '23'): 'Features the first full appearance of the Juggernaut, one of the key Silver Age X-Men villain issues.',
+    ('fantastic four', '56'): 'Part of the Lee/Kirby Doctor Doom and Klaw sequence that continues the early Wakanda/Black Panther arc from FF #52–53.',
+    ('mighty thor', '134'): 'First appearance of the High Evolutionary (and the Man-Beast), introducing key Wundagore mythology in the Lee/Kirby Thor run.',
+    ('x-men', '23'): 'A Silver Age original-team era issue from the Roy Thomas period, with classic school-era X-Men storytelling and character dynamics.',
 }
 
 
@@ -108,7 +110,7 @@ def issue_importance_text(title: str, issue: str):
 
     if (t, i) in KEY_ISSUE_NOTES:
         base = KEY_ISSUE_NOTES[(t, i)]
-        return f"{base} Silver Age keys with recognizable villain or storyline significance usually see stronger buyer interest and better liquidity in matching grade tiers."
+        return f"{base} It sits in a well-known stretch of Marvel Silver Age continuity and reads as a strong character/story chapter even outside first-appearance collecting."
 
     try:
         inum = int(i)
@@ -117,18 +119,18 @@ def issue_importance_text(title: str, issue: str):
 
     if t == 'fantastic four':
         if inum is not None and inum <= 102:
-            return f"Fantastic Four #{i} is from the Lee/Kirby Silver Age run, where eye appeal and grade drive strong collector demand. Early Marvel flagship issues with notable continuity ties tend to attract steady bidder activity."
-        return f"Fantastic Four #{i} has steady run-collector demand with value strongly tied to presentation and grade. Cleaner examples with strong centering and color generally perform better versus guide in active markets."
+            return f"Fantastic Four #{i} is from the Lee/Kirby Silver Age run and sits in one of Marvel's foundational family/sci-fi eras. It connects to major long-form continuity threads that many FF readers specifically chase."
+        return f"Fantastic Four #{i} is part of Marvel's classic FF run with strong creator-era identity. It works well as both a standalone Silver Age read and as a bridge issue within larger arcs."
 
     if t == 'amazing spider-man':
         if inum is not None and inum <= 50:
-            return f"Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era, one of Marvel's most collected runs. Early ASM demand is deep, and stronger copies usually command a premium over lower-grade comps."
-        return f"Amazing Spider-Man #{i} has consistent demand from run collectors, with higher-grade copies earning clear premiums. Presentation and page quality often separate median sales from top-end realized prices."
+            return f"Amazing Spider-Man #{i} is an early Silver Age issue from the Ditko/Romita era with classic Peter Parker storytelling. It sits in the formative stretch of the title where many defining supporting characters and rivalries were established."
+        return f"Amazing Spider-Man #{i} is a classic run issue with recognizable era-specific tone and artwork. It fits naturally in run-building for readers focused on foundational Spider-Man continuity."
 
     if t == 'x-men':
-        return f"X-Men #{i} is from Marvel's core mutant run, where condition and page quality materially impact value. Early X-Men issues with key character relevance often move faster when accurately graded and well-photographed."
+        return f"X-Men #{i} is from the original-team Silver Age period with early school-era mutant dynamics. It reflects the pre-relaunch voice of the title and has strong historical context within the franchise's first run."
 
-    return f"{title} #{i} has collector demand, with value primarily driven by grade, eye appeal, and scarcity in stronger condition. Books with clear defects disclosed and strong imaging generally convert better and reduce post-sale friction."
+    return f"{title} #{i} is a vintage issue with period-correct storytelling and artwork. It fits naturally for readers building era runs and for collectors who want classic Marvel continuity in original format."
 
 
 def dynamic_ask_multiplier(row):
