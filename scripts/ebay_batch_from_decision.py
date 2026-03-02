@@ -167,12 +167,7 @@ def select_image_paths(folder: str, up_dir: Path | None) -> list[Path]:
             merged.append(p)
             seen.add(p)
 
-    # 1) Include curated per-book upload folder photos (Please Grade Me / raw set).
-    if up_dir and up_dir.exists():
-        for p in sorted(up_dir.iterdir()):
-            add_path(p)
-
-    # 2) Also include slabbed photo set from data/cgc-photos (additive, not fallback).
+    # 1) Put slabbed photo set first from data/cgc-photos.
     if folder and CGC_PHOTO_ROOT.exists():
         pats = [
             f'{folder}_OBV.*',
@@ -185,6 +180,11 @@ def select_image_paths(folder: str, up_dir: Path | None) -> list[Path]:
         for pat in pats:
             for p in sorted(CGC_PHOTO_ROOT.glob(pat)):
                 add_path(p)
+
+    # 2) Then include curated per-book upload folder photos (Please Grade Me / raw set).
+    if up_dir and up_dir.exists():
+        for p in sorted(up_dir.iterdir()):
+            add_path(p)
 
     return merged
 
