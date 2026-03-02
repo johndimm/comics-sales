@@ -18,3 +18,4 @@ privacy-url.txt
 web/node_modules/
 web/.next/
 web/.vercel/
+.DS_Store
